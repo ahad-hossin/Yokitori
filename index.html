@@ -2026,7 +2026,7 @@ function formatDate(day, month, year) {
    ========================================================================= */
 const GITHUB_CONFIG = {
   owner:  'ahad-hossin',     // GitHub username
-  repo:   'Photography',     // repository name
+  repo:   'Yokitori',        // repository name
   branch: 'main',            // usually 'main', sometimes 'master'
   path:   'photos',          // folder containing your images + .json files
 };
@@ -3411,7 +3411,7 @@ function renderPhoto(i) {
 
 // =========================================================================
 // SHAREABLE LINKS — derive a URL slug from each photo's filename, so a
-// link like https://ahad-hossin.github.io/Photography/#Above_What_Holds_You
+// link like https://ahad-hossin.github.io/Yokitori/#Above_What_Holds_You
 // will deep-open the corresponding photo's details modal. The slug is
 // just the filename with the "_yokitori_Ahad_Hossin.<ext>" suffix removed
 // (case-insensitive). If the suffix isn't present, we fall back to the
@@ -3682,7 +3682,7 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 /* =========================================================================
    DEEP LINK — if the URL has a #slug on load, find the matching photo
    and auto-open its details modal. This makes any photo's URL shareable:
-   e.g. yourdomain/Photography/#Above_What_Holds_You will land the visitor
+   e.g. yourdomain/Yokitori/#Above_What_Holds_You will land the visitor
    directly on that photo's modal, with a working back button that closes
    the modal and reveals the gallery underneath (rather than leaving the
    site). We rewrite the landed history entry to the bare gallery URL
