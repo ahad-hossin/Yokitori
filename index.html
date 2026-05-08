@@ -1,0 +1,3731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Yokitori</title>
+<meta name="description" content="Photographs by Yokitori (Ahad Hossin) — based in Dhaka, Bangladesh."/>
+<meta name="author" content="Ahad Hossin"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='10' fill='%230a0a0a'/><path d='M725 465 644 433 179 1298Q166 1323 153.5 1333.0Q141 1343 119 1347L83 1355Q59 1360 52.0 1365.5Q45 1371 45 1379Q45 1389 53.5 1394.5Q62 1400 79 1400H447Q465 1400 476.0 1394.5Q487 1389 487 1379Q487 1361 441 1354L367 1345Q323 1338 312.5 1325.0Q302 1312 315 1286L720 525L674 492L1079 1250Q1102 1292 1091.5 1315.0Q1081 1338 1034 1345L948 1356Q932 1358 924.0 1364.0Q916 1370 916 1379Q916 1389 924.5 1394.5Q933 1400 949 1400H1268Q1285 1400 1294.0 1394.5Q1303 1389 1303 1379Q1303 1371 1296.5 1365.5Q1290 1360 1265 1354L1250 1350Q1228 1346 1212.0 1336.0Q1196 1326 1181.0 1306.0Q1166 1286 1147 1249ZM620 504H738V104Q738 84 750.5 72.0Q763 60 786 56L867 45Q897 39 897 21Q897 12 890.0 6.0Q883 0 867 0H491Q475 0 467.5 6.0Q460 12 460 21Q460 39 491 45L571 56Q594 60 607.0 72.0Q620 84 620 104Z' fill='%23ededed' transform='translate(10.43 54.4) scale(0.032 -0.032)'/></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..500&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* =========================================================================
+   FOUNDATION
+   ========================================================================= */
+:root {
+  --bg: #0a0a0a;
+  --bg-2: #0f0f0f;
+  --bg-3: #141414;
+  --ink: #ededed;
+  --ink-dim: #8a8a8a;
+  --ink-dimmer: #4a4a4a;
+  --ink-glow: #ffffff;
+  --rec: #ff2d2d;
+  --focus: #3ddc84;
+  --amber: #ffb020;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.16);
+  --line-3: rgba(255, 255, 255, 0.28);
+
+  --f-display: "Fraunces", Georgia, serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Courier New", monospace;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-sharp: cubic-bezier(0.77, 0, 0.18, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; background: var(--bg); }
+body {
+  font-family: var(--f-mono);
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  cursor: none;
+}
+@media (pointer: coarse) { body { cursor: auto; } }
+
+::selection { background: var(--ink); color: var(--bg); }
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; border: none; background: none; color: inherit; cursor: none; }
+@media (pointer: coarse) { button, a { cursor: pointer; } }
+
+/* =========================================================================
+   FILM GRAIN OVERLAY (subtle, animated)
+   ========================================================================= */
+.grain {
+  position: fixed;
+  inset: -50%;
+  width: 200%; height: 200%;
+  pointer-events: none;
+  z-index: 9995;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.2 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  animation: grainShift 8s steps(10) infinite;
+}
+@keyframes grainShift {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-3%, 1%); }
+  40%  { transform: translate(2%, -3%); }
+  60%  { transform: translate(-4%, 2%); }
+  80%  { transform: translate(3%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* =========================================================================
+   CUSTOM CURSOR — Focus Reticle
+   ========================================================================= */
+.cur {
+  position: fixed;
+  top: 0; left: 0;
+  width: 40px; height: 40px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+}
+.cur-box {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.28s var(--ease), opacity 0.3s;
+}
+.cur-corner {
+  position: absolute;
+  width: 10px; height: 10px;
+  border: 1px solid var(--ink-glow);
+}
+.cur-corner.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.cur-corner.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.cur-corner.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.cur-corner.br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+.cur-dot {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 2px; height: 2px;
+  background: var(--ink-glow);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+.cur-label {
+  position: absolute;
+  top: 50%; left: calc(100% + 12px);
+  transform: translateY(-50%);
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--ink-glow);
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.cur.lock .cur-box { transform: scale(1.4); }
+.cur.lock .cur-label { opacity: 1; }
+.cur.link .cur-box { transform: scale(0.5); }
+.cur.hidden { opacity: 0; }
+@media (pointer: coarse) { .cur { display: none; } }
+
+/* =========================================================================
+   BOOT SCREEN — Camera power-on sequence (short, dismissible)
+   ========================================================================= */
+.boot {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 10000;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  gap: 22px;
+  transition: opacity 0.7s var(--ease), visibility 0.7s;
+}
+.boot.done { opacity: 0; visibility: hidden; pointer-events: none; }
+.boot-wordmark {
+  font-family: var(--f-display);
+  font-weight: 200;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  position: relative;
+}
+.boot-wordmark::after {
+  content: "";
+  position: absolute;
+  right: -14px; top: 50%;
+  width: 10px; height: 10px;
+  background: var(--rec);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 0 14px rgba(255,45,45,0.6);
+  animation: blink 1.1s ease-in-out infinite;
+}
+.boot-log {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  min-height: 16px;
+}
+.boot-log .ok { color: var(--focus); }
+.boot-bar {
+  width: min(320px, 60vw);
+  height: 1px;
+  background: var(--line-2);
+  position: relative;
+  overflow: hidden;
+}
+.boot-bar::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: bootBar 1.1s var(--ease) 0.1s forwards;
+}
+@keyframes bootBar { to { transform: scaleX(1); } }
+.boot-hint {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  color: var(--ink-dimmer);
+  text-transform: uppercase;
+  margin-top: 8px;
+  opacity: 0;
+  animation: fade 0.5s var(--ease) 0.8s forwards;
+}
+@keyframes fade { to { opacity: 1; } }
+
+/* =========================================================================
+   PAGE CORNER VIEWFINDER BRACKETS — breathing
+   ========================================================================= */
+.vf {
+  position: fixed;
+  width: 22px; height: 22px;
+  border: 1px solid var(--ink);
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.5;
+  animation: vfBreath 4s ease-in-out infinite;
+}
+@keyframes vfBreath {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.75; }
+}
+.vf.tl { top: 18px; left: 18px; border-right: 0; border-bottom: 0; }
+.vf.tr { top: 18px; right: 18px; border-left: 0; border-bottom: 0; }
+.vf.bl { bottom: 68px; left: 18px; border-right: 0; border-top: 0; }
+.vf.br { bottom: 68px; right: 18px; border-left: 0; border-top: 0; }
+/* Hide the permanent viewfinder brackets on mobile — too much chrome on small screens. */
+@media (max-width: 760px) {
+  .vf { display: none; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* =========================================================================
+   NAV
+   ========================================================================= */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 40;
+  padding: 26px 54px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, rgba(10,10,10,0.85), rgba(10,10,10,0));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.nav-mark {
+  font-family: var(--f-display);
+  font-weight: 300;
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  text-transform: none;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-mark::before {
+  display: none;
+}
+.nav-links { display: flex; gap: 28px; }
+.nav-links a {
+  position: relative;
+  padding: 4px 0;
+  color: var(--ink-dim);
+  transition: color 0.3s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.nav-links a::before {
+  content: attr(data-num);
+  font-size: 11px;
+  color: var(--ink-dimmer);
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s var(--ease);
+}
+.nav-links a:hover::after { transform: scaleX(1); }
+
+@media (max-width: 760px) {
+  .nav { padding: 18px 22px; }
+  .nav-mark { font-size: 16px; letter-spacing: 0.16em; }
+  .nav-links { gap: 20px; font-size: 12px; letter-spacing: 0.14em; }
+  .nav-links a::before { display: none; }
+}
+
+/* =========================================================================
+   HERO
+   ========================================================================= */
+.hero {
+  min-height: 100vh;
+  min-height: 100svh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 140px 54px 180px;
+  overflow: hidden;
+}
+
+/* Sweeping scanline */
+.hero::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  animation: scan 9s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes scan {
+  0%   { top: 0; opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { top: 100%; opacity: 1; }
+  55%  { opacity: 0; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* HUD positions */
+.hud {
+  position: absolute;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  opacity: 0;
+  animation: hudIn 0.6s var(--ease) forwards;
+}
+@keyframes hudIn { to { opacity: 1; } }
+.hud.top-left    { top: 110px; left: 54px; animation-delay: 0.3s; }
+.hud.top-right   { top: 110px; right: 54px; animation-delay: 0.45s; }
+.hud.bot-left    { bottom: 140px; left: 54px; animation-delay: 0.6s; }
+.hud.bot-right   { bottom: 140px; right: 54px; animation-delay: 0.75s; }
+
+.hud .chip {
+  padding: 7px 11px;
+  border: 1px solid var(--line-2);
+  color: var(--ink);
+  transition: border-color 0.3s;
+}
+.hud .chip:hover { border-color: var(--line-3); }
+.hud .chip .k { color: var(--ink-dim); margin-right: 8px; }
+
+.rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+}
+.rec-dot {
+  width: 7px; height: 7px;
+  background: var(--rec);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255,45,45,0.7);
+  animation: blink 1.6s ease-in-out infinite;
+}
+
+/* Focus reticle at hero center, tracks mouse subtly */
+.reticle {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 56px; height: 56px;
+  transform: translate(-50%, calc(-50% - 18vh));
+  pointer-events: none;
+  opacity: 0;
+  animation: retIn 0.8s var(--ease) 0.1s forwards;
+}
+@keyframes retIn { to { opacity: 0.7; } }
+.reticle::before,
+.reticle::after {
+  content: "";
+  position: absolute;
+  background: var(--ink);
+}
+.reticle::before { left: 50%; top: 0; width: 1px; height: 100%; transform: translateX(-50%); }
+.reticle::after  { top: 50%; left: 0; height: 1px; width: 100%; transform: translateY(-50%); }
+.reticle .ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 18px; height: 18px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: focusBreath 3.4s ease-in-out infinite;
+}
+@keyframes focusBreath {
+  0%, 100% { width: 18px; height: 18px; opacity: 1; }
+  50%      { width: 26px; height: 26px; opacity: 0.4; }
+}
+.reticle .corner {
+  position: absolute;
+  width: 10px; height: 10px;
+  border: 1px solid var(--ink);
+}
+.reticle .corner.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.reticle .corner.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.reticle .corner.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.reticle .corner.br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+
+/* Hero content */
+.hero-center {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.hero-kicker {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  margin-bottom: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  animation: riseIn 1s var(--ease) 0.25s forwards;
+}
+.hero-kicker::before,
+.hero-kicker::after {
+  content: "";
+  display: inline-block;
+  width: 28px; height: 1px;
+  background: var(--ink-dimmer);
+}
+
+.hero-title {
+  font-family: var(--f-display);
+  font-weight: 200;
+  font-size: clamp(4rem, 14vw, 12rem);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  overflow: hidden;
+}
+.hero-title .word {
+  display: inline-block;
+  transform: translateY(110%);
+  filter: blur(24px);
+  opacity: 0;
+  animation: titleIn 1.4s var(--ease) 0.35s forwards;
+}
+@keyframes titleIn {
+  0%   { transform: translateY(110%); filter: blur(24px); opacity: 0; }
+  60%  { filter: blur(6px); opacity: 1; }
+  100% { transform: translateY(0); filter: blur(0); opacity: 1; }
+}
+@keyframes riseIn { to { opacity: 1; transform: translateY(0); } }
+
+.hero-sub {
+  margin-top: 32px;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: riseIn 1s var(--ease) 1.15s forwards;
+}
+.hero-sub .caret {
+  display: inline-block;
+  width: 7px; height: 12px;
+  background: var(--ink);
+  margin-left: 6px;
+  vertical-align: middle;
+  animation: caret 1s steps(2) infinite;
+}
+@keyframes caret { 50% { opacity: 0; } }
+
+@media (max-width: 800px) {
+  .hud { font-size: 11px; gap: 8px; letter-spacing: 0.14em; }
+  .hud.top-left  { top: 74px; left: 22px; }
+  .hud.top-right { top: 74px; right: 22px; }
+  .hud.bot-left  { bottom: 110px; left: 22px; flex-wrap: wrap; max-width: calc(100vw - 44px); }
+  .hud.bot-right { bottom: 110px; right: 22px; }
+  .hud .chip { padding: 5px 8px; }
+  .reticle { width: 40px; height: 40px; }
+  .hero { padding: 120px 22px 180px; }
+  .hero-kicker { font-size: 11px; letter-spacing: 0.24em; margin-bottom: 28px; }
+  .hero-kicker::before, .hero-kicker::after { width: 18px; }
+  .hero-sub { font-size: 12px; letter-spacing: 0.2em; margin-top: 24px; }
+  .vf.bl, .vf.br { bottom: 80px; }
+}
+@media (max-width: 480px) {
+  .hud.bot-left .chip:nth-child(n+3) { display: none; }
+}
+
+/* =========================================================================
+   GALLERY
+   ========================================================================= */
+.gallery {
+  padding: 140px 54px 48px;
+  max-width: none;
+  margin: 0 auto;
+}
+.gallery-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.gallery-head .gh-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--ink);
+}
+.gallery-head .gh-left::before {
+  content: "";
+  width: 7px; height: 7px;
+  background: var(--rec);
+  border-radius: 50%;
+  animation: blink 1.6s ease-in-out infinite;
+}
+.gallery-head .gh-center {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.year-pill {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  background: transparent;
+  border: 1px solid var(--line-2);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: color 0.25s var(--ease), border-color 0.25s var(--ease), background 0.25s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+}
+.year-pill:hover { color: var(--ink); border-color: var(--ink-dim); }
+.year-pill.active {
+  color: var(--bg);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.year-pill .count {
+  font-size: 10px;
+  opacity: 0.7;
+  letter-spacing: 0.08em;
+}
+
+/* Mosaic: 3 independent vertical columns.
+   Geometry: short = 6/5 aspect, tall = 3/5 aspect → 1 tall ≈ 2 shorts stacked.
+   Gap uses a CSS var so columns stay in a shared rhythm. */
+.grid {
+  --gap: 8px;
+  --cols: 3;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  /* Dense packing backfills gaps left by portrait (span-2) tiles so rows
+     never look ragged. Auto-row height derives from each frame's own
+     aspect-ratio (square for landscape, 1:2 for portrait). */
+  grid-auto-flow: dense;
+  gap: var(--gap);
+}
+.month-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: -18px 0 26px;
+  padding: 0;
+  min-height: 24px;
+  transition: opacity 0.3s var(--ease);
+}
+.month-filter:empty { display: none; }
+.month-pill {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  background: transparent;
+  border: 1px solid var(--line);
+  padding: 6px 11px;
+  cursor: pointer;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+.month-pill:hover { color: var(--ink); border-color: var(--ink-dim); }
+.month-pill.active {
+  color: var(--bg);
+  background: var(--ink-dim);
+  border-color: var(--ink-dim);
+}
+.month-pill .count { font-size: 9px; opacity: 0.7; }
+
+.grid > .frame { display: block; }
+
+/* Tweak-driven toggles */
+body.no-meta       .frame-meta,
+body.no-frame-num  .frame-num,
+body.no-hud        .hud,
+body.no-status     .status { display: none !important; }
+body.no-cursor-dot .frame { cursor: default; }
+body.no-cursor-dot .frame-focus { display: none; }
+body.no-fade-mask  .grid.collapsed { -webkit-mask-image: none; mask-image: none; }
+body.monochrome .frame img,
+body.monochrome .modal-img-wrap img { filter: grayscale(1) contrast(1.05) !important; }
+
+/* -------- Arrange mode (author-only drag to reorder + set cutoff) -------- */
+body.arranging .grid > .frame {
+  cursor: grab;
+  outline: 1px dashed rgba(255,255,255,0.12);
+  outline-offset: -1px;
+  transition: transform 0.15s, outline-color 0.15s, box-shadow 0.15s;
+}
+body.arranging .grid > .frame:hover {
+  outline-color: var(--rec);
+  box-shadow: 0 0 0 1px var(--rec), 0 12px 40px rgba(0,0,0,0.5);
+}
+body.arranging .grid > .frame:active { cursor: grabbing; }
+body.arranging .grid > .frame.ds-dragging {
+  opacity: 0.35;
+}
+body.arranging .grid > .frame.ds-drop-target {
+  outline: 2px solid var(--rec);
+  outline-offset: 2px;
+}
+body.arranging .grid > .frame::before {
+  content: "⋮⋮";
+  position: absolute; top: 8px; left: 8px; z-index: 5;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.72);
+  color: var(--rec);
+  font-family: var(--f-mono); font-size: 10px;
+  letter-spacing: -0.1em;
+  border: 1px solid rgba(255,74,28,0.5);
+  pointer-events: none;
+}
+body.arranging .frame-focus,
+body.arranging .frame-meta { opacity: 0 !important; }
+body.arranging .grid > .frame { pointer-events: auto; }
+
+/* Cutoff divider — sits after the last "above fold" tile */
+.cutoff-divider {
+  /* Span the full row in the CSS grid. */
+  grid-column: 1 / -1;
+  display: none;
+  margin: 6px 0;
+  padding: 22px 18px;
+  border: 2px dashed var(--rec);
+  background: rgba(255,74,28,0.05);
+  color: var(--rec);
+  font-family: var(--f-mono); font-size: 11px;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  text-align: center;
+  cursor: grab; user-select: none;
+  position: relative;
+  transition: background 0.15s;
+}
+body.arranging .cutoff-divider { display: block; }
+.cutoff-divider::before, .cutoff-divider::after {
+  content: ""; position: absolute; left: 16px; right: 16px; height: 1px;
+  background: repeating-linear-gradient(90deg, var(--rec) 0 6px, transparent 6px 12px);
+}
+.cutoff-divider::before { top: 6px; }
+.cutoff-divider::after  { bottom: 6px; }
+.cutoff-divider strong { color: #fff; font-weight: 600; letter-spacing: 0.18em; }
+.cutoff-divider:active { cursor: grabbing; }
+.cutoff-divider.ds-drop-target { background: rgba(255,74,28,0.22); }
+
+/* Divider action buttons (+ and ×) — top-right corners, arrange-mode only. */
+.cutoff-divider .cd-btn {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,74,28,0.45);
+  background: rgba(0,0,0,0.55);
+  color: var(--rec);
+  font-family: var(--f-mono); font-size: 16px; line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.12s, color 0.12s, border-color 0.12s, transform 0.12s;
+  padding: 0;
+}
+.cutoff-divider .cd-btn:hover {
+  background: var(--rec);
+  color: #fff;
+  border-color: var(--rec);
+  transform: translateY(-50%) scale(1.08);
+}
+.cutoff-divider .cd-remove { right: 14px; }
+.cutoff-divider .cd-add    { right: 48px; font-size: 18px; }
+
+/* Ghost divider — non-draggable prompt to seed a first cutoff. */
+.cutoff-divider.cutoff-ghost {
+  border-style: dotted;
+  opacity: 0.72;
+  cursor: default;
+}
+.cutoff-divider.cutoff-ghost:active { cursor: default; }
+.cutoff-divider.cutoff-ghost .cd-add { right: 14px; }
+
+/* Arrange-mode notice if filters are on */
+.arrange-notice {
+  display: none;
+  padding: 14px 18px;
+  border: 1px solid rgba(255,74,28,0.35);
+  background: rgba(255,74,28,0.06);
+  color: var(--rec);
+  font-family: var(--f-mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 14px;
+  text-align: center;
+}
+body.arranging.filters-active .arrange-notice { display: block; }
+/* Tiles and dividers stay draggable under filters. Each view owns its
+   own cutoffs now, so dividers render in filtered views too. */
+
+.grid.collapsed {
+  position: relative;
+  max-height: 820px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 72%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 0%, #000 72%, transparent 100%);
+}
+.grid-more {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.grid-more.hidden { display: none; }
+.see-more[hidden] { display: none; }
+.see-more.less { color: var(--ink-dim); border-color: var(--line); }
+.see-more.less:hover { color: var(--bg); background: var(--ink-dim); border-color: var(--ink-dim); }
+.see-more {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line-2);
+  padding: 16px 30px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color 0.25s var(--ease), background 0.25s var(--ease), color 0.25s var(--ease);
+}
+.see-more:hover { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.see-more .sm-count {
+  font-size: 11px;
+  opacity: 0.65;
+  letter-spacing: 0.08em;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+}
+.see-more .sm-arrow {
+  font-size: 15px;
+  letter-spacing: 0;
+  transition: transform 0.3s var(--ease);
+}
+.see-more.expanded .sm-arrow { transform: rotate(180deg); }
+@media (max-width: 1100px) {
+  .grid { --gap: 6px; }
+}
+@media (max-width: 900px) {
+  .gallery { padding: 96px 22px 40px; }
+  .grid { --gap: 5px; }
+  .gallery-head { font-size: 11px; letter-spacing: 0.16em; gap: 14px; }
+  .year-pill { font-size: 11px; padding: 7px 11px; }
+  .month-pill { font-size: 10px; padding: 5px 9px; }
+  .see-more { font-size: 12px; padding: 14px 22px; letter-spacing: 0.18em; }
+}
+@media (max-width: 760px) {
+  .gallery { padding: 80px 8px 32px; }
+  /* !important here is intentional: the gallery JS may write --cols / --gap
+     as inline styles when the user customizes the desktop layout via TWEAKS,
+     and inline styles otherwise beat media queries. We force the mobile
+     count so the layout never collapses into unreadable 3+ columns on
+     phones, regardless of customization. */
+  .grid { --cols: 2 !important; --gap: 4px !important; }
+  /* Push the filter pills onto their own row below the "LIVE · SELECTED FRAMES" text.
+     order: 99 sends them to the end of the flex order; flex-basis: 100% makes them
+     consume a full row, which forces them onto the next line. */
+  .gallery-head .gh-center { flex-basis: 100%; order: 99; }
+}
+@media (max-width: 420px) {
+  .gallery { padding: 72px 6px 28px; }
+  .grid { --gap: 3px !important; }
+}
+
+.frame {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-2);
+  cursor: none;
+  transition: transform 0.5s var(--ease);
+  /* Landscape tiles set their own height via aspect-ratio 6:5; grid picks
+     that as the row height. Portrait tiles drop the explicit aspect and
+     just span 2 rows — their final height becomes row × 2 + one gap,
+     which is visually exactly "two shorts stacked". object-fit: cover on
+     the <img> lets any source photo fill the block without distortion. */
+  aspect-ratio: 6/5;
+  width: 100%;
+}
+.frame.tall {
+  /* Portrait: 3:5 aspect makes height ≈ 2 × landscape height (6:5).
+     span 2 reserves two row slots so neighbors wrap cleanly even after
+     full-width children like the cutoff divider. */
+  aspect-ratio: 3/5;
+  grid-row: span 2;
+}
+@media (pointer: coarse) { .frame { cursor: pointer; } }
+
+.frame-img-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.frame img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: brightness(0.92) contrast(1.02) saturate(0.92) blur(0);
+  transition: transform 1.1s var(--ease), filter 0.55s var(--ease);
+  /* Kill the iOS/Android long-press "Save Image / Copy / Share" callout and
+     the desktop drag-to-save gesture. pointer-events:none routes the tap to
+     the parent .frame so its click handler (open modal) keeps working. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.frame:hover img {
+  transform: scale(1.04);
+  filter: brightness(1.05) contrast(1.08) saturate(1.02) blur(0);
+}
+
+/* Before focus locks — a tiny blur pull to sharp on enter */
+.frame::before,
+.frame::after,
+.frame > .c1,
+.frame > .c2 {
+  content: "";
+  position: absolute;
+  width: 14px; height: 14px;
+  border: 1px solid var(--ink);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease), transform 0.5s var(--ease);
+  z-index: 2;
+  pointer-events: none;
+}
+.frame::before { top: 10px; left: 10px; border-right: 0; border-bottom: 0; transform: translate(4px, 4px); }
+.frame::after  { top: 10px; right: 10px; border-left: 0; border-bottom: 0; transform: translate(-4px, 4px); }
+.frame > .c1   { bottom: 10px; left: 10px; border-right: 0; border-top: 0; transform: translate(4px, -4px); }
+.frame > .c2   { bottom: 10px; right: 10px; border-left: 0; border-top: 0; transform: translate(-4px, -4px); }
+.frame:hover::before,
+.frame:hover::after,
+.frame:hover > .c1,
+.frame:hover > .c2 { opacity: 1; transform: translate(0, 0); }
+
+/* Number badge — always visible top-left. Dimmer by default for a cleaner
+   resting state; brightens on hover to match UI-quality feedback rules. */
+.frame-num {
+  position: absolute;
+  top: 12px; left: 12px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.92);
+  padding: 4px 7px;
+  background: rgba(10,10,10,0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 3;
+  text-transform: uppercase;
+  transition: color 0.3s var(--ease), background 0.3s var(--ease);
+}
+.frame:hover .frame-num { color: var(--ink-glow); background: rgba(10,10,10,0.7); }
+/* Hide the N° 001 number badge on mobile — cleaner tiles on small screens. */
+@media (max-width: 760px) {
+  .frame-num { display: none; }
+}
+
+/* Focus-lock badge appears on hover */
+.frame-focus {
+  position: absolute;
+  top: 12px; right: 12px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--focus);
+  padding: 4px 7px;
+  background: rgba(10,10,10,0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 3;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity 0.25s var(--ease), transform 0.35s var(--ease);
+  display: inline-flex;
+  align-items: center; gap: 6px;
+}
+.frame-focus::before {
+  content: ""; width: 5px; height: 5px;
+  background: var(--focus); border-radius: 50%;
+  box-shadow: 0 0 6px var(--focus);
+  animation: blink 1s ease-in-out infinite;
+}
+.frame:hover .frame-focus { opacity: 1; transform: translateX(0); }
+
+/* Bottom metadata */
+.frame-meta {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 16px 14px 14px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.85) 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 10px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s var(--ease), transform 0.45s var(--ease);
+  z-index: 3;
+}
+.frame:hover .frame-meta { opacity: 1; transform: translateY(0); }
+.frame-meta .title {
+  font-family: var(--f-display);
+  font-weight: 300;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  line-height: 1.15;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.frame.tall .frame-meta .title { font-size: 19px; }
+.frame-meta .loc { color: var(--ink-dim); font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =========================================================================
+   BOTTOM PERSISTENT STATUS BAR — Always-on camera telemetry
+   ========================================================================= */
+.status {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 45;
+  padding: 13px 20px;
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 18px;
+  align-items: center;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+.status.in { opacity: 1; }
+/* Modal opaque-ish backdrop still lets the fixed status bar bleed through
+   as a faint band at the bottom (its border-top + own backdrop-filter
+   make it visible). Hide it while the modal is open — most obvious on
+   mobile where viewport height is short. */
+body:has(.modal.open) .status {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.st-cell { display: flex; align-items: center; gap: 10px; }
+.st-cell .k { color: var(--ink-dimmer); }
+.st-cell .v { color: var(--ink); }
+
+/* Battery */
+.battery {
+  position: relative;
+  width: 34px; height: 12px;
+  border: 1px solid var(--line-3);
+}
+.battery::after {
+  content: "";
+  position: absolute;
+  right: -3px; top: 50%;
+  width: 2px; height: 5px;
+  background: var(--line-3);
+  transform: translateY(-50%);
+}
+.battery-fill {
+  position: absolute;
+  inset: 1px;
+  background: var(--ink);
+  transform-origin: left;
+  transform: scaleX(0.72);
+  transition: transform 0.6s var(--ease);
+}
+.battery-fill.low { background: var(--amber); }
+
+/* Audio wave */
+.wave {
+  display: inline-flex; align-items: center; gap: 2px; height: 14px;
+}
+.wave span {
+  width: 2px;
+  background: var(--ink);
+  animation: waveAnim 1.3s ease-in-out infinite;
+}
+.wave span:nth-child(1){ height: 40%; animation-delay: 0s; }
+.wave span:nth-child(2){ height: 85%; animation-delay: 0.1s; }
+.wave span:nth-child(3){ height: 60%; animation-delay: 0.2s; }
+.wave span:nth-child(4){ height: 95%; animation-delay: 0.3s; }
+.wave span:nth-child(5){ height: 55%; animation-delay: 0.4s; }
+.wave span:nth-child(6){ height: 70%; animation-delay: 0.5s; }
+.wave span:nth-child(7){ height: 35%; animation-delay: 0.6s; }
+@keyframes waveAnim {
+  0%, 100% { transform: scaleY(1); }
+  50%      { transform: scaleY(0.3); }
+}
+
+/* Scroll progress bar */
+.scroll-prog {
+  position: absolute;
+  top: -1px; left: 0;
+  height: 1px;
+  background: var(--ink);
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+@media (max-width: 900px) {
+  .status {
+    grid-template-columns: auto 1fr auto;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    padding: 10px 14px;
+    gap: 14px;
+  }
+  .status .st-hide-mobile { display: none; }
+}
+
+/* =========================================================================
+   MODAL — Click a photo to open
+   ========================================================================= */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(6,6,6,0.98);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.45s var(--ease), visibility 0.45s;
+}
+.modal.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Aperture iris — 6 overlapping blades that slide in/out from center.
+   Each blade is wider than 60° so adjacent blades overlap by ~30°,
+   which kills the subpixel seams and corner see-through that a perfect
+   hex tiling has. GPU-pinned with translateZ + backface-visibility to
+   eliminate jitter on the simultaneous transform transitions. */
+.iris {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  pointer-events: none;
+  visibility: hidden;
+}
+.iris.active { visibility: visible; }
+
+/* Solid backdrop beneath the blades. Appears INSTANTLY when closing
+   starts so the viewport is never see-through, regardless of blade
+   positions or aspect ratio. Fades out smoothly with the blades on open. */
+.iris::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+  pointer-events: none;
+}
+.iris.closing::before {
+  opacity: 1;
+  transition: none; /* instant-on; fades out smoothly when .closing is removed */
+}
+
+.iris-blade {
+  position: absolute;
+  top: 50%; left: 50%;
+  /* Bigger than needed so far corners are always covered, even after
+     rotation rounding. Width > 60° of arc guarantees blade overlap. */
+  width: 260vmax;
+  height: 260vmax;
+  background: var(--bg);
+  transform-origin: 0% 100%;
+  transition: transform 0.62s cubic-bezier(0.55, 0.05, 0.25, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+/* Open position — each blade parked far off-screen along its own radial.
+   translate3d forces a GPU layer; the z-translation keeps them stable. */
+.iris-blade:nth-child(1){ transform: rotate(0deg)   translate3d(0, -100%, 0); }
+.iris-blade:nth-child(2){ transform: rotate(60deg)  translate3d(0, -100%, 0); }
+.iris-blade:nth-child(3){ transform: rotate(120deg) translate3d(0, -100%, 0); }
+.iris-blade:nth-child(4){ transform: rotate(180deg) translate3d(0, -100%, 0); }
+.iris-blade:nth-child(5){ transform: rotate(240deg) translate3d(0, -100%, 0); }
+.iris-blade:nth-child(6){ transform: rotate(300deg) translate3d(0, -100%, 0); }
+/* Closed — every blade slid to the center so their overlap tiles the
+   viewport solid. A 10% overshoot past 0 guarantees robust overlap
+   even with sub-pixel rendering at rotation boundaries. */
+.iris.closing .iris-blade:nth-child(1){ transform: rotate(0deg)   translate3d(0, 10%, 0); }
+.iris.closing .iris-blade:nth-child(2){ transform: rotate(60deg)  translate3d(0, 10%, 0); }
+.iris.closing .iris-blade:nth-child(3){ transform: rotate(120deg) translate3d(0, 10%, 0); }
+.iris.closing .iris-blade:nth-child(4){ transform: rotate(180deg) translate3d(0, 10%, 0); }
+.iris.closing .iris-blade:nth-child(5){ transform: rotate(240deg) translate3d(0, 10%, 0); }
+.iris.closing .iris-blade:nth-child(6){ transform: rotate(300deg) translate3d(0, 10%, 0); }
+
+.modal-inner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(360px, 1fr);
+  padding: 68px 96px 120px;
+  gap: 40px;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform 0.55s var(--ease) 0.1s, opacity 0.45s var(--ease) 0.1s;
+}
+.modal.open .modal-inner {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.modal-img-wrap {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.modal-img-frame {
+  position: relative;
+  display: block;
+  line-height: 0;
+  /* Width/height are set from JS to the largest box matching the image's
+     aspect ratio that fits inside the wrap. */
+}
+.modal-img-wrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: contrast(1.04) saturate(0.96);
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity 0.6s var(--ease), transform 0.7s var(--ease);
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none; /* drag/save gestures go to the frame, not the image */
+}
+.modal-img-wrap img.shown { opacity: 1; transform: scale(1); }
+.modal-img-wrap.magnify { cursor: none; }
+.modal-img-wrap.magnify img {
+  transform: scale(2.4);
+  transition: transform 0.25s var(--ease);
+  cursor: zoom-out;
+  transform-origin: var(--mx, 50%) var(--my, 50%);
+}
+.magnify-hint {
+  position: absolute;
+  left: 50%; bottom: 12px;
+  transform: translateX(-50%);
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid var(--line-2);
+  background: rgba(10,10,10,0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: none;
+  opacity: 0.9;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.magnify-hint .dot {
+  width: 5px; height: 5px;
+  background: var(--focus);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--focus);
+}
+.modal-img-wrap.magnify .magnify-hint { opacity: 0; }
+.magnify-hint[hidden] { display: none; }
+/* Magnify is a hover-only interaction (mouse drag to zoom).
+   Touch devices can't hover, so hide the hint entirely on them. */
+@media (pointer: coarse) {
+  .magnify-hint { display: none; }
+}
+.modal-img-frame .vb {
+  position: absolute;
+  width: 18px; height: 18px;
+  border: 1px solid var(--ink);
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease);
+}
+.modal-img-wrap.magnify .modal-img-frame .vb { opacity: 0; }
+.modal-img-frame .vb.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.modal-img-frame .vb.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.modal-img-frame .vb.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.modal-img-frame .vb.br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+
+.modal-data {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 0;
+  overflow-y: auto;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge legacy */
+}
+.modal-data::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+.md-head {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.md-head::before {
+  content: "";
+  width: 6px; height: 6px;
+  background: var(--rec);
+  border-radius: 50%;
+  animation: blink 1.2s ease-in-out infinite;
+}
+.md-title {
+  font-family: var(--f-display);
+  font-weight: 200;
+  font-size: clamp(2.6rem, 4.4vw, 4rem);
+  letter-spacing: -0.035em;
+  line-height: 1;
+  margin-bottom: 20px;
+}
+.md-subline {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  margin-bottom: 36px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+.md-subline span + span { position: relative; }
+.md-subline span + span::before {
+  content: "/";
+  position: absolute;
+  left: -13px;
+  color: var(--ink-dimmer);
+}
+
+/* Coordinates — clickable link to Google Maps. Only shown if set. */
+.md-coords {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: -22px 0 36px;
+}
+.md-coords a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--ink-dimmer);
+  padding: 2px 0;
+  transition: color 0.25s, border-color 0.25s, transform 0.25s;
+}
+.md-coords a:hover {
+  color: var(--rec);
+  border-bottom-color: var(--rec);
+}
+.md-coords a:active { transform: translateY(1px); }
+.md-coords svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+.md-coords .ext {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--ink-dimmer);
+  margin-left: 2px;
+}
+
+.md-body {
+  font-family: var(--f-display);
+  font-weight: 300;
+  font-size: clamp(1.15rem, 1.4vw, 1.35rem);
+  line-height: 1.55;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  max-width: 46ch;
+  margin-bottom: 40px;
+}
+
+/* Text swap transition — when navigating between photos, all text fields
+   fade and lift together. Mirrors the .exif-cell pattern below for a
+   visually consistent feel. The .text-swap class is toggled on the modal
+   by renderPhoto() to drive both the fade-out and the fade-in. */
+#mLabelNum,
+.md-head,
+.md-title,
+.md-subline,
+.md-coords,
+.md-body {
+  transition: opacity 0.38s var(--ease), transform 0.38s var(--ease);
+}
+.modal.text-swap #mLabelNum,
+.modal.text-swap .md-head,
+.modal.text-swap .md-title,
+.modal.text-swap .md-subline,
+.modal.text-swap .md-coords,
+.modal.text-swap .md-body {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* EXIF readout */
+.exif {
+  border-top: 1px solid var(--line-2);
+  padding-top: 22px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+}
+.exif-cell {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+}
+.exif-cell.in {
+  opacity: 1; transform: translateY(0);
+}
+.exif-cell .k {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+.exif-cell .v {
+  font-family: var(--f-mono);
+  font-size: 15px;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+/* Copyright block — sits at the very bottom of the modal data column,
+   after EXIF. Wrapped with .exif inside .md-bottom so the modal-data
+   flex layout (justify-content: space-between) still has exactly two
+   children: title group on top, this group on bottom. */
+.md-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.md-copyright {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  font-family: var(--f-mono);
+  line-height: 1.7;
+}
+.md-copyright .mc-mark {
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.md-copyright .mc-fine {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-dimmer);
+  line-height: 1.6;
+  max-width: 42ch;
+}
+
+/* Close + label + nav */
+.modal-close {
+  position: absolute;
+  top: 30px; right: 54px;
+  width: 46px; height: 46px;
+  border: 1px solid var(--line-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+  transition: border-color 0.3s, background 0.3s, transform 0.4s var(--ease), color 0.3s;
+  z-index: 3;
+}
+.modal-close:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  transform: rotate(90deg);
+}
+
+.modal-label {
+  position: absolute;
+  top: 34px;
+  left: 54px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  z-index: 3;
+}
+.modal-label .chip {
+  padding: 5px 10px;
+  border: 1px solid var(--line-2);
+  color: var(--ink);
+}
+
+/* Prev/Next arrows */
+.modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px; height: 48px;
+  border: 1px solid var(--line-2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 14px;
+  transition: border-color 0.3s, background 0.3s, color 0.3s;
+  z-index: 5;
+}
+.modal-nav:hover { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.modal-nav.prev { left: 24px; }
+.modal-nav.next { right: 24px; }
+
+/* Thumbnail strip at the bottom of the modal */
+.modal-strip {
+  position: absolute;
+  left: 54px; right: 54px;
+  bottom: 24px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  overflow-x: auto;
+  padding: 8px 0;
+  z-index: 4;
+}
+.modal-strip::-webkit-scrollbar { display: none; }
+.thumb {
+  flex: 0 0 auto;
+  width: 52px; height: 66px;
+  opacity: 0.35;
+  border: 1px solid transparent;
+  transition: opacity 0.3s, border-color 0.3s, transform 0.3s var(--ease);
+  cursor: none;
+  overflow: hidden;
+  position: relative;
+}
+@media (pointer: coarse) { .thumb { cursor: pointer; } }
+.thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.thumb:hover { opacity: 0.8; transform: translateY(-2px); }
+.thumb.active {
+  opacity: 1;
+  border-color: var(--ink);
+}
+.thumb.active::after {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: -6px;
+  transform: translateX(-50%);
+  width: 6px; height: 6px;
+  background: var(--rec);
+  border-radius: 50%;
+}
+
+@media (max-width: 900px) {
+  .modal-inner {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    padding: 72px 20px 16px;
+    gap: 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE/Edge legacy */
+  }
+  /* Thumb strip is fiddly on phones and overlays the EXIF/copyright block;
+     nav arrows are already hidden on mobile, so the strip goes too. */
+  .modal-strip { display: none; }
+  .modal-inner::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+  .modal-data { scrollbar-width: none; -ms-overflow-style: none; }
+  .modal-data::-webkit-scrollbar { display: none; }
+  /* Image wrap: size to content, no forced aspect ratio. The image inside
+     displays at its natural aspect, capped to 60vh so it never dominates
+     the viewport. Overrides the JS frame-sizing which assumes a fixed
+     container — on mobile we just let the image drive its own box. */
+  .modal-img-wrap {
+    height: auto;
+    aspect-ratio: unset;
+    max-height: 60vh;
+    flex-shrink: 0;
+    display: block;
+    min-width: 0;
+  }
+  .modal-img-frame {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 60vh;
+    margin: 0 auto;
+  }
+  .modal-img-wrap img {
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+    object-fit: contain;
+  }
+  /* Data column: allow text to shrink/wrap inside the flex parent */
+  .modal-data { padding: 0; min-width: 0; }
+  /* Title: much smaller on mobile — 4rem desktop is too big for phones */
+  .md-title {
+    font-size: clamp(1.7rem, 7vw, 2.3rem);
+    line-height: 1.1;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+  .md-body {
+    font-size: 1.02rem;
+    line-height: 1.55;
+    margin-bottom: 28px;
+    overflow-wrap: anywhere;  /* coords/long strings can break mid-word */
+  }
+  .md-subline {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    margin-bottom: 24px;
+    overflow-wrap: anywhere;
+  }
+  .md-head { font-size: 11px; letter-spacing: 0.2em; margin-bottom: 14px; }
+  .modal-label { top: 20px; left: 20px; font-size: 11px; letter-spacing: 0.16em; gap: 10px; }
+  .modal-label .chip { padding: 4px 8px; }
+  .modal-close { top: 14px; right: 14px; width: 42px; height: 42px; font-size: 11px; }
+  .modal-nav { display: none; }
+  .exif { grid-template-columns: 1fr 1fr; gap: 16px 18px; padding-top: 18px; }
+  .exif-cell .v { font-size: 13px; }
+  .exif-cell .k { font-size: 10px; letter-spacing: 0.16em; }
+}
+
+/* =========================================================================
+   FOOTER
+   ========================================================================= */
+.foot {
+  border-top: 1px solid var(--line);
+  padding: 80px 54px 80px;
+  margin-top: 120px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+}
+.foot-big {
+  font-family: var(--f-display);
+  font-weight: 200;
+  font-size: clamp(3rem, 10vw, 9rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  text-transform: none;
+  margin-bottom: 48px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.foot-big .rec-inline {
+  display: inline-block;
+  width: 14px; height: 14px;
+  background: var(--rec);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255,45,45,0.55);
+  animation: blink 1.6s ease-in-out infinite;
+}
+.foot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.foot-col h4 {
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  color: var(--ink-dimmer);
+  font-weight: 400;
+  margin-bottom: 14px;
+}
+.foot-col a { color: var(--ink); transition: color 0.3s; display: inline-block; padding: 3px 0; }
+.foot-col a:hover { color: var(--rec); }
+.foot-col p { color: var(--ink); line-height: 1.9; font-size: 13px; }
+.foot-bot {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--ink-dim);
+}
+.foot-bot .end-of-roll {
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.foot-bot .end-of-roll::before {
+  content: "";
+  width: 28px; height: 1px;
+  background: var(--ink);
+}
+
+@media (max-width: 800px) {
+  .foot { padding: 56px 22px 96px; margin-top: 80px; font-size: 11px; }
+  .foot-grid { grid-template-columns: 1fr; gap: 28px; }
+  .foot-bot { font-size: 11px; letter-spacing: 0.14em; gap: 8px; }
+  .foot-col h4 { font-size: 11px; }
+  .foot-col p { font-size: 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Film grain overlay -->
+<div class="grain"></div>
+
+<!-- Page corner brackets -->
+<div class="vf tl"></div><div class="vf tr"></div>
+<div class="vf bl"></div><div class="vf br"></div>
+
+<!-- Custom cursor -->
+<div class="cur" id="cur">
+  <div class="cur-box">
+    <div class="cur-corner tl"></div><div class="cur-corner tr"></div>
+    <div class="cur-corner bl"></div><div class="cur-corner br"></div>
+    <div class="cur-dot"></div>
+  </div>
+  <div class="cur-label" id="curLabel">FOCUS</div>
+</div>
+
+<!-- Boot sequence -->
+<div class="boot" id="boot">
+  <div class="boot-wordmark">Yokitori</div>
+  <div class="boot-log" id="bootLog">&gt; SYS INIT</div>
+  <div class="boot-bar"></div>
+  <div class="boot-hint">tap to skip</div>
+</div>
+
+<!-- Aperture iris (plays when opening a photo) -->
+<div class="iris" id="iris">
+  <div class="iris-blade"></div><div class="iris-blade"></div>
+  <div class="iris-blade"></div><div class="iris-blade"></div>
+  <div class="iris-blade"></div><div class="iris-blade"></div>
+</div>
+
+<!-- Nav -->
+<header class="nav">
+  <div class="nav-mark">Yokitori</div>
+  <nav class="nav-links">
+    <a href="#work" data-num="01">Work</a>
+    <a href="#contact" data-num="02">Contact</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hud top-left">
+    <span class="rec"><span class="rec-dot"></span>REC</span>
+    <span id="heroDate">—</span>
+  </div>
+  <div class="hud top-right">
+    <span id="clock">00:00:00</span>
+    <span>SESSION</span>
+  </div>
+  <div class="hud bot-left">
+    <span class="chip"><span class="k">ISO</span>400</span>
+    <span class="chip"><span class="k">F</span>2.8</span>
+    <span class="chip"><span class="k">S</span>1/125</span>
+    <span class="chip"><span class="k">WB</span>5200K</span>
+  </div>
+  <div class="hud bot-right">
+    <span class="chip"><b style="color:var(--ink)">Ahad Hossin</b></span>
+    <span class="chip"><span class="k">AF</span><b style="color:var(--focus)">LOCK</b></span>
+  </div>
+
+  <div class="hero-center">
+    <div class="hero-kicker">Photographs</div>
+    <h1 class="hero-title"><span class="word">Yokitori</span></h1>
+    <div class="hero-sub">Wherever the light is<span class="caret"></span></div>
+  </div>
+</section>
+
+<!-- Gallery -->
+<section class="gallery" id="work">
+  <div class="gallery-head">
+    <div class="gh-left">Live · Selected Frames</div>
+    <div class="gh-center" id="yearFilter" role="tablist" aria-label="Filter by year"></div>
+    <div><span id="frameCount">018</span> Frames</div>
+  </div>
+  <div class="month-filter" id="monthFilter" role="tablist" aria-label="Filter by month"></div>
+  <div class="arrange-notice">Viewing a filtered subset · cutoffs and reordering apply to this view</div>
+  <div class="grid" id="grid"></div>
+  <div class="grid-more" id="gridMore">
+    <button type="button" class="see-more less" id="seeLessBtn" hidden>
+      <span class="sm-arrow" aria-hidden="true">↑</span>
+      <span class="sm-label">See fewer</span>
+    </button>
+    <button type="button" class="see-more" id="seeMoreBtn">
+      <span class="sm-label">See more</span>
+      <span class="sm-count" id="seeMoreCount">+00</span>
+      <span class="sm-arrow" aria-hidden="true">↓</span>
+    </button>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="foot" id="contact">
+  <div class="foot-big">
+    <span>Yoki</span>
+    <span class="rec-inline"></span>
+  </div>
+  <div class="foot-grid">
+    <div class="foot-col">
+      <h4>Contact</h4>
+      <p><a href="mailto:ahadhossinart@gmail.com">ahadhossinart@gmail.com</a></p>
+    </div>
+    <div class="foot-col">
+      <h4>Elsewhere</h4>
+      <p>
+        <a href="https://www.instagram.com/yokitori_sama/" target="_blank" rel="noopener">Instagram</a>
+      </p>
+    </div>
+    <div class="foot-col">
+      <h4>Based in</h4>
+      <p>Dhaka, Bangladesh</p>
+    </div>
+  </div>
+  <div class="foot-bot">
+    <span class="end-of-roll">End of roll</span>
+    <span>© 2026 Ahad Hossin · All frames reserved</span>
+  </div>
+</footer>
+
+<!-- Persistent bottom status bar -->
+<div class="status" id="status">
+  <div class="scroll-prog" id="scrollProg"></div>
+  <div class="st-cell">
+    <span class="k">BATT</span>
+    <span class="battery"><span class="battery-fill" id="battFill"></span></span>
+    <span class="v" id="battTxt">72%</span>
+  </div>
+  <div class="st-cell st-hide-mobile">
+    <span class="k">MEM</span>
+    <span class="v"><span id="memUsed">00247</span> / 00999 FRM</span>
+  </div>
+  <div class="st-cell">
+    <span class="k">SHOTS</span>
+    <span class="v"><b id="shotCount" style="color:var(--ink)">000</b> taken</span>
+  </div>
+  <div class="st-cell st-hide-mobile">
+    <span class="k">GPS</span>
+    <span class="v">Dhaka, Bangladesh</span>
+  </div>
+  <div class="st-cell">
+    <span class="k">FRM</span>
+    <span class="v"><b id="sbFrame" style="color:var(--ink)">001</b>/<span id="sbFrameTotal">018</span></span>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal-label">
+    <span class="chip">Detail</span>
+    <span id="mLabelNum">N° 000</span>
+  </div>
+  <button class="modal-close" id="mClose" aria-label="Close">CLOSE</button>
+  <button class="modal-nav prev" id="mPrev" aria-label="Previous">‹</button>
+  <button class="modal-nav next" id="mNext" aria-label="Next">›</button>
+
+  <div class="modal-inner">
+    <div class="modal-img-wrap">
+      <div class="modal-img-frame">
+        <div class="vb tl"></div><div class="vb tr"></div>
+        <div class="vb bl"></div><div class="vb br"></div>
+        <img id="mImg" draggable="false" oncontextmenu="return false" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt=""/>
+      </div>
+      <div class="magnify-hint" hidden><span class="dot"></span>Hold to magnify</div>
+    </div>
+    <div class="modal-data">
+      <div>
+        <div class="md-head" id="mKicker">Frame N° 000</div>
+        <h2 class="md-title" id="mTitle">—</h2>
+        <div class="md-subline" id="mSubline"></div>
+        <div class="md-coords" id="mCoords" hidden></div>
+        <p class="md-body" id="mBody">—</p>
+      </div>
+      <div class="md-bottom">
+        <div class="exif" id="mExif"></div>
+        <div class="md-copyright">
+          <div class="mc-mark">© <span id="mcYear">2026</span> · Ahad Hossin · All frames reserved</div>
+          <div class="mc-fine">Photograph by Yokitori · Dhaka, Bangladesh. Reproduction, redistribution, or commercial use of this image without written permission from the artist is prohibited.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-strip" id="mStrip"></div>
+</div>
+
+<script>
+/* =========================================================================
+   PHOTO DATA — auto-discovered from GitHub
+   -------------------------------------------------------------------------
+   To add a new photo:
+     1. Upload the image (e.g. 24_07_2024_yokitori.webp) into /photos
+     2. Optionally upload a sidecar 24_07_2024_yokitori.json with any of:
+          { "title": "...", "loc": "...", "coords": "...", "date": "...", "body": "...",
+            "exif": { camera, lens, iso, f, s, focal } }
+     3. Push to GitHub. That's it — the gallery auto-discovers it.
+
+   Configure GITHUB_CONFIG below with your username + repo. The site calls
+   the GitHub Contents API once on load to list everything in /photos, then
+   loads each image and its .json sidecar via normal relative paths.
+   ========================================================================= */
+const PHOTO_FILES = {
+  silhouette: "photos/sunset-silhouette.png",
+  bird:       "photos/bird-sunset.png",
+  cumulus:    "photos/cumulus-storm.png",
+  kite:       "photos/kite-sunset.png",
+};
+
+const EXIF_PRESETS = {
+  silhouette: { camera: "iPhone 15 Pro", lens: "Main · 24mm eq.", iso: "125",  f: "f/1.78", s: "1/60 s",   focal: "24mm"  },
+  bird:       { camera: "iPhone 15 Pro", lens: "Tele · 77mm eq.", iso: "200",  f: "f/2.8",  s: "1/400 s",  focal: "77mm"  },
+  cumulus:    { camera: "iPhone 15 Pro", lens: "Main · 24mm eq.", iso: "64",   f: "f/1.78", s: "1/1200 s", focal: "24mm"  },
+  kite:       { camera: "iPhone 15 Pro", lens: "Main · 24mm eq.", iso: "80",   f: "f/1.78", s: "1/800 s",  focal: "24mm"  },
+};
+
+/* Flat photo list. Order here = display order.
+   `aspect` is optional — if omitted, the tile shape is auto-detected from
+   the image's real dimensions on load (portrait → tall, landscape → short).
+   Set it explicitly only when you want to force-crop an image into a
+   different tile shape than its native ratio. */
+const PHOTOS_RAW = /*DATASET-BEGIN*/[
+]/*DATASET-END*/;
+
+// Normalize: add img/exif/year/month/num to every photo.
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function normalizePhotos(raw) {
+  return raw.map((p, i) => {
+    const yearMatch  = (p.date || '').match(/\b(19|20)\d{2}\b/);
+    const monthMatch = (p.date || '').match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+    const placeholder = `data:image/svg+xml;utf8,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60"><rect width="80" height="60" fill="%23141414"/><rect x="1" y="1" width="78" height="58" fill="none" stroke="%23262626"/><text x="40" y="33" text-anchor="middle" font-family="monospace" font-size="7" fill="%23555">NO IMAGE</text></svg>`.replace(/"/g,"'"))}`;
+    return {
+      ...p,
+      img:   p.img   || PHOTO_FILES[p.key] || placeholder,
+      exif:  p.exif  || EXIF_PRESETS[p.key] || { camera: "—", lens: "—", iso: "—", f: "—", s: "—", focal: "—" },
+      year:  p.year  || (yearMatch ? yearMatch[0] : ""),
+      month: p.month || (monthMatch ? monthMatch[0].slice(0,1).toUpperCase() + monthMatch[0].slice(1,3).toLowerCase() : ""),
+      num:   p.num   || String(i + 1).padStart(3, "0"),
+    };
+  });
+}
+let PHOTOS = normalizePhotos(PHOTOS_RAW);
+
+// Unique years, newest first — used to build the filter pills.
+function computeYears() {
+  return [...new Set(PHOTOS.map(p => p.year).filter(Boolean))].sort().reverse();
+}
+let YEARS = computeYears();
+
+/* =========================================================================
+   FILENAME HELPERS — used by both the gallery and the local loader
+   ========================================================================= */
+const MONTH_BY_NUM = { '01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec' };
+
+// Pull filename → { day, month, year, seq } or null.
+// Accepts: dd_mm_yyyy_yokitori.webp, dd_mm_yyyy_NN_yokitori.webp,
+//          dd_mm_yyyy_yokitori_a.webp. Case-insensitive. Any image ext.
+function parsePhotoFilename(name) {
+  const m = name.match(/^(\d{2})[_-](\d{2})[_-](\d{4})(?:[_-](\d{1,3}))?[_-]yokitori(?:[_-]([a-z]))?\.(webp|jpg|jpeg|png|avif)$/i);
+  if (!m) return null;
+  const [, dd, mm, yyyy, seqNum, seqLetter] = m;
+  const day = parseInt(dd, 10), mon = parseInt(mm, 10), yr = parseInt(yyyy, 10);
+  if (day < 1 || day > 31 || mon < 1 || mon > 12) return null;
+  const seq = seqNum ? parseInt(seqNum, 10) : (seqLetter ? (seqLetter.toLowerCase().charCodeAt(0) - 96) : 0);
+  return { day, month: mon, year: yr, seq };
+}
+
+function formatDate(day, month, year) {
+  const mname = MONTH_BY_NUM[String(month).padStart(2,'0')];
+  return `${String(day).padStart(2,'0')} ${mname} ${year}`;
+}
+
+/* =========================================================================
+   AUTO-DISCOVERY CONFIG
+   -------------------------------------------------------------------------
+   Set `owner` and `repo` to your GitHub username and repository name.
+   On every page load the gallery auto-discovers everything in `path` and
+   rebuilds itself — just upload a new photo (and optionally a .json
+   sidecar) and it appears. No code edits, no manifest to maintain.
+
+   Discovery order:
+   - PRIMARY: jsDelivr's data API. No rate limits, CDN-cached at the edge,
+     reflects new commits within ~10 minutes.
+   - FALLBACK: GitHub Contents API. Used only if jsDelivr is unreachable.
+     Anonymous limit is 60 requests/hour per IP — fine for normal visitors,
+     can rate-limit you during heavy testing.
+
+   Both methods require the repo to be PUBLIC. Image files are always
+   served from the jsDelivr CDN regardless of which discovery method ran.
+   ========================================================================= */
+const GITHUB_CONFIG = {
+  owner:  'ahad-hossin',     // GitHub username
+  repo:   'Photography',     // repository name
+  branch: 'main',            // usually 'main', sometimes 'master'
+  path:   'photos',          // folder containing your images + .json files
+};
+
+const _IMAGE_EXT_RE = /\.(webp|jpe?g|png|avif)$/i;
+
+// Build a jsDelivr CDN URL for any file in the photos folder.
+// jsDelivr is a free CDN that mirrors public GitHub repos with no bandwidth
+// limits and global edge caching — much faster and more reliable than serving
+// images directly from GitHub Pages.
+function cdnUrl(fname) {
+  const { owner, repo, branch, path } = GITHUB_CONFIG;
+  return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/${encodeURIComponent(fname)}`;
+}
+
+async function loadFromGitHub() {
+  const { owner, repo, path } = GITHUB_CONFIG;
+  if (!owner || owner === 'YOUR_GITHUB_USERNAME' || !repo || repo === 'YOUR_REPO_NAME') {
+    throw new Error('GITHUB_CONFIG not set — edit owner/repo at top of script');
+  }
+
+  // Try configured branch first, then the other common default branch name.
+  const branchesToTry = [GITHUB_CONFIG.branch, GITHUB_CONFIG.branch === 'main' ? 'master' : 'main'];
+  let entries = null;
+
+  for (const branch of branchesToTry) {
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`;
+    const res = await fetch(apiUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json) && json.length > 0) {
+        entries = json;
+        GITHUB_CONFIG.branch = branch; // lock in the correct branch for cdnUrl()
+        break;
+      }
+    }
+  }
+
+  if (!Array.isArray(entries)) throw new Error('GitHub API: no valid response for any branch — check owner/repo/branch/visibility');
+
+  // Image files only. Folders, READMEs, and the .json sidecars are filtered out.
+  const filenames = entries
+    .filter(e => e.type === 'file' && _IMAGE_EXT_RE.test(e.name))
+    .map(e => e.name);
+
+  if (!filenames.length) throw new Error(`No images found in ${owner}/${repo}/${path}`);
+
+  // Sort newest-first by the date encoded in the filename
+  // (dd_mm_yyyy_yokitori.ext). Files that don't match that pattern fall
+  // to the end in alphabetical order — so legacy/oddly-named photos still show.
+  filenames.sort((a, b) => {
+    const pa = parsePhotoFilename(a);
+    const pb = parsePhotoFilename(b);
+    if (pa && pb) {
+      const da = pa.year * 10000 + pa.month * 100 + pa.day;
+      const db = pb.year * 10000 + pb.month * 100 + pb.day;
+      if (da !== db) return db - da;             // newer date first
+      return (pa.seq || 0) - (pb.seq || 0);      // same day → seq ascending
+    }
+    if (pa) return -1;
+    if (pb) return 1;
+    return a.localeCompare(b);
+  });
+
+  // Sidecar JSONs are loaded by relative path — same origin, no API hit.
+  const sidecars = await Promise.all(filenames.map(fetchSidecar));
+
+  const DEFAULT_EXIF = { camera: '—', lens: '—', iso: '—', f: '—', s: '—', focal: '—' };
+  const list = filenames.map((fname, i) => {
+    const e = sidecars[i] || {};
+    const parsedFromName = parsePhotoFilename(fname);
+    const parsedFromDate = parsedFromName ? null : parseDateString(e.date);
+    const parsed = parsedFromName || parsedFromDate;
+
+    const autoDate = parsed ? formatDate(parsed.day, parsed.month, parsed.year) : '';
+    const autoTitle = parsedFromName
+      ? `Frame ${autoDate}` + (parsedFromName.seq ? ` · ${String(parsedFromName.seq).padStart(2,'0')}` : '')
+      : (e.date ? `Frame ${e.date}` : 'Untitled');
+
+    const item = {
+      key:   'local',
+      title: e.title || autoTitle,
+      loc:   e.loc   || '',
+      coords: e.coords || '',
+      date:  e.date  || autoDate,
+      body:  e.body  || '',
+      img:   cdnUrl(fname),
+      exif:  { ...DEFAULT_EXIF, ...(e.exif || {}) },
+    };
+    if (e.num) item.num = String(e.num);
+    if (e.orientation) item.orientation = e.orientation;
+    return item;
+  });
+
+  PHOTOS = normalizePhotos(list);
+  YEARS = computeYears();
+  activeYear = 'all';
+  activeMonth = 'all';
+  visibleByView = {};
+  window.__yokitoriOrderMap = null;
+
+  renderYearPills();
+  renderMonthPills();
+  renderGrid();
+
+  // Backfill orientation for any photo without an explicit one in its sidecar.
+  const needsOrient = PHOTOS.filter(p => !p.orientation);
+  if (needsOrient.length) {
+    let remaining = needsOrient.length;
+    needsOrient.forEach(p => {
+      const im = new Image();
+      im.onload = () => {
+        const r = im.naturalWidth / im.naturalHeight;
+        p.orientation = r < 0.95 ? 'tall' : (r > 1.05 ? 'wide' : 'square');
+        remaining--;
+        if (remaining === 0) {
+          window.__yokitoriOrderMap = null;
+          renderGrid();
+        }
+      };
+      im.onerror = () => {
+        remaining--;
+        if (remaining === 0) { window.__yokitoriOrderMap = null; renderGrid(); }
+      };
+      im.src = p.img;
+    });
+  }
+
+  return PHOTOS.length;
+}
+
+/* =========================================================================
+   JSDELIVR AUTO-DISCOVERY (PRIMARY)
+   -------------------------------------------------------------------------
+   Uses jsDelivr's data API to list every file in the repo at the given
+   ref. Compared to the GitHub Contents API this is:
+     - rate-limit-free (the GitHub API caps anonymous requests at 60/hour
+       per IP, which breaks the gallery for visitors and during testing)
+     - CDN-cached at the edge, so the request is fast worldwide
+     - the same source jsDelivr will serve the actual image files from,
+       so discovery and delivery agree on what exists
+
+   Branch refs (e.g. @main) refresh on jsDelivr's side roughly every
+   10–15 minutes, so newly-pushed photos appear automatically without
+   any code changes — just push to GitHub.
+   ========================================================================= */
+async function loadFromJsDelivr() {
+  const { owner, repo, path } = GITHUB_CONFIG;
+  if (!owner || owner === 'YOUR_GITHUB_USERNAME' || !repo || repo === 'YOUR_REPO_NAME') {
+    throw new Error('GITHUB_CONFIG not set — edit owner/repo at top of script');
+  }
+
+  // Try the configured branch first, then fall back to 'master' if 'main' fails
+  // (jsDelivr needs the exact branch name that exists in the repo).
+  const branchesToTry = [GITHUB_CONFIG.branch, GITHUB_CONFIG.branch === 'main' ? 'master' : 'main'];
+  let data = null;
+  let usedBranch = GITHUB_CONFIG.branch;
+
+  for (const branch of branchesToTry) {
+    const apiUrl = `https://data.jsdelivr.com/v1/packages/gh/${owner}/${repo}@${encodeURIComponent(branch)}?structure=flat`;
+    const res = await fetch(apiUrl);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && Array.isArray(json.files) && json.files.length > 0) {
+        data = json;
+        usedBranch = branch;
+        // Update config so cdnUrl() uses the correct branch for image delivery
+        GITHUB_CONFIG.branch = branch;
+        break;
+      }
+    }
+  }
+
+  if (!data || !Array.isArray(data.files)) {
+    throw new Error(`jsDelivr API returned no data for ${owner}/${repo} — check owner/repo/branch`);
+  }
+
+  // Flat-mode paths look like "/photos/foo.webp". Match images directly under
+  // the configured photos folder (no nested subdirs) with a supported extension.
+  const prefix = `/${path}/`;
+  const filenames = data.files
+    .map(f => f.name)
+    .filter(name => name.startsWith(prefix))
+    .map(name => name.slice(prefix.length))
+    .filter(name => !name.includes('/'))
+    .filter(name => _IMAGE_EXT_RE.test(name));
+
+  if (!filenames.length) throw new Error(`No images found in ${owner}/${repo}/${path}`);
+
+  // Sort newest-first by date encoded in filename (dd_mm_yyyy_yokitori.ext);
+  // unparseable names fall to the end alphabetically.
+  filenames.sort((a, b) => {
+    const pa = parsePhotoFilename(a);
+    const pb = parsePhotoFilename(b);
+    if (pa && pb) {
+      const da = pa.year * 10000 + pa.month * 100 + pa.day;
+      const db = pb.year * 10000 + pb.month * 100 + pb.day;
+      if (da !== db) return db - da;
+      return (pa.seq || 0) - (pb.seq || 0);
+    }
+    if (pa) return -1;
+    if (pb) return 1;
+    return a.localeCompare(b);
+  });
+
+  const sidecars = await Promise.all(filenames.map(fetchSidecar));
+
+  const DEFAULT_EXIF = { camera: '—', lens: '—', iso: '—', f: '—', s: '—', focal: '—' };
+  const list = filenames.map((fname, i) => {
+    const e = sidecars[i] || {};
+    const parsedFromName = parsePhotoFilename(fname);
+    const parsedFromDate = parsedFromName ? null : parseDateString(e.date);
+    const parsed = parsedFromName || parsedFromDate;
+
+    const autoDate = parsed ? formatDate(parsed.day, parsed.month, parsed.year) : '';
+    const autoTitle = parsedFromName
+      ? `Frame ${autoDate}` + (parsedFromName.seq ? ` · ${String(parsedFromName.seq).padStart(2,'0')}` : '')
+      : (e.date ? `Frame ${e.date}` : 'Untitled');
+
+    const item = {
+      key:   'local',
+      title: e.title || autoTitle,
+      loc:   e.loc   || '',
+      coords: e.coords || '',
+      date:  e.date  || autoDate,
+      body:  e.body  || '',
+      img:   cdnUrl(fname),
+      exif:  { ...DEFAULT_EXIF, ...(e.exif || {}) },
+    };
+    if (e.num) item.num = String(e.num);
+    if (e.orientation) item.orientation = e.orientation;
+    return item;
+  });
+
+  PHOTOS = normalizePhotos(list);
+  YEARS = computeYears();
+  activeYear = 'all';
+  activeMonth = 'all';
+  visibleByView = {};
+  window.__yokitoriOrderMap = null;
+
+  renderYearPills();
+  renderMonthPills();
+  renderGrid();
+
+  // Backfill orientation for photos missing an explicit one in their sidecar.
+  const needsOrient = PHOTOS.filter(p => !p.orientation);
+  if (needsOrient.length) {
+    let remaining = needsOrient.length;
+    needsOrient.forEach(p => {
+      const im = new Image();
+      im.onload = () => {
+        const r = im.naturalWidth / im.naturalHeight;
+        p.orientation = r < 0.95 ? 'tall' : (r > 1.05 ? 'wide' : 'square');
+        remaining--;
+        if (remaining === 0) {
+          window.__yokitoriOrderMap = null;
+          renderGrid();
+        }
+      };
+      im.onerror = () => {
+        remaining--;
+        if (remaining === 0) { window.__yokitoriOrderMap = null; renderGrid(); }
+      };
+      im.src = p.img;
+    });
+  }
+
+  return PHOTOS.length;
+}
+
+/* =========================================================================
+   SHARED HELPERS — used by both auto-discovery loaders above
+   ========================================================================= */
+function parseDateString(s) {
+  if (!s) return null;
+  let m;
+  if ((m = s.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/))) {
+    const monMap = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
+    const mon = monMap[m[2].slice(0,3).toLowerCase()];
+    if (!mon) return null;
+    return { day: +m[1], month: mon, year: +m[3], seq: 0 };
+  }
+  if ((m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/))) {
+    return { day: +m[3], month: +m[2], year: +m[1], seq: 0 };
+  }
+  if ((m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/))) {
+    return { day: +m[1], month: +m[2], year: +m[3], seq: 0 };
+  }
+  return null;
+}
+
+async function fetchSidecar(basename) {
+  const jsonName = basename.replace(/\.(webp|jpg|jpeg|png|avif)$/i, '.json');
+  // Sidecar JSONs are served via jsDelivr too. They 404 silently if the
+  // photo has no sidecar — that's expected, not an error.
+  try {
+    const r = await fetch(cdnUrl(jsonName), { cache: 'no-cache' });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+/* =========================================================================
+   BOOT SEQUENCE (non-blocking, dismissible on tap)
+   ========================================================================= */
+(function boot(){
+  const boot = document.getElementById('boot');
+  const log = document.getElementById('bootLog');
+  const lines = [
+    '> SYS INIT',
+    '> LENS OK',
+    '> MEM OK',
+    '> LOADING FRAMES',
+    '> READY <span class="ok">●</span>'
+  ];
+  let i = 0;
+  const tick = setInterval(() => {
+    if (i < lines.length) {
+      log.innerHTML = lines[i++];
+    } else {
+      clearInterval(tick);
+    }
+  }, 220);
+  const dismiss = () => {
+    boot.classList.add('done');
+    document.getElementById('status').classList.add('in');
+    clearInterval(tick);
+  };
+  setTimeout(dismiss, 1500);
+  boot.addEventListener('click', dismiss);
+  boot.addEventListener('touchstart', dismiss, { passive: true });
+})();
+
+/* =========================================================================
+   CUSTOM CURSOR
+   ========================================================================= */
+(function cursor(){
+  const cur = document.getElementById('cur');
+  const label = document.getElementById('curLabel');
+  if (!cur) return;
+  let mx = window.innerWidth/2, my = window.innerHeight/2;
+  let rx = mx, ry = my;
+
+  window.addEventListener('mousemove', (e) => {
+    mx = e.clientX; my = e.clientY;
+  });
+
+  function tick(){
+    rx += (mx - rx) * 0.22;
+    ry += (my - ry) * 0.22;
+    cur.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  document.addEventListener('mouseover', (e) => {
+    const frame = e.target.closest('.frame');
+    const link  = e.target.closest('a, button, .thumb');
+    if (frame) {
+      cur.classList.remove('link');
+      cur.classList.add('lock');
+      label.textContent = 'OPEN';
+    } else if (link) {
+      cur.classList.remove('lock');
+      cur.classList.add('link');
+    } else {
+      cur.classList.remove('lock', 'link');
+      label.textContent = 'FOCUS';
+    }
+  });
+
+  document.addEventListener('mouseleave', () => cur.classList.add('hidden'));
+  document.addEventListener('mouseenter', () => cur.classList.remove('hidden'));
+})();
+
+/* =========================================================================
+   HERO RETICLE — follows mouse with gentle parallax
+   ========================================================================= */
+(function reticle(){
+  const r = document.getElementById('reticle');
+  if (!r) return;
+  const hero = document.querySelector('.hero');
+  let tx = 0, ty = 0;
+  hero.addEventListener('mousemove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    tx = (e.clientX - cx) * 0.04;
+    ty = (e.clientY - cy) * 0.04;
+    r.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% - 18vh + ${ty}px))`;
+  });
+})();
+
+/* =========================================================================
+   RENDER GRID — masonry (CSS columns) with year filter
+   ========================================================================= */
+/* =========================================================================
+   ★ LAYOUT SETTINGS ★
+   -------------------------------------------------------------------------
+   This is the ONLY block you need to edit in index.html to change the
+   visual layout. Everything below it is wiring that reads these values.
+
+     columns       - how many masonry columns (integer)
+     gap           - pixels between tiles (integer)
+     sort          - "original" | "newest" | "oldest" | "random"
+     monochrome    - true / false  (black & white mode)
+     showFadeMask  - true / false  (fade the bottom of the collapsed grid)
+     accent        - any CSS color (hex, rgb, named)
+     imageFilter   - 0.0 to 2.0    (contrast/saturation boost)
+
+   Per-photo "load more" cutoffs are now auto-generated (one every 10
+   photos in the visible list); the `cutoffs` below is unused legacy.
+   ========================================================================= */
+const TWEAK_DEFAULTS = {
+  "columns": 3,
+  "gap": 9,
+  "sort": "original",
+  "monochrome": false,
+  "showFadeMask": false,
+  "accent": "#ff4a1c",
+  "imageFilter": 1,
+
+  // --- Everything below here rarely needs changing ---
+  "initialTiles": 7,
+  "batchSize": 6,
+  "showMeta": true,
+  "showFrameNum": true,
+  "showCursorDot": true,
+  "showHud": true,
+  "showStatus": true,
+  "hoverIntensity": 1,
+  "arrangeMode": false,
+  "cutoffs": {"all":[]}
+};
+let TWEAKS = { ...TWEAK_DEFAULTS };
+
+// Deep-clone cutoffs so runtime mutations don't touch the defaults block
+// (and so we always have a valid object even if JSON stored null).
+if (!TWEAKS.cutoffs || typeof TWEAKS.cutoffs !== 'object') TWEAKS.cutoffs = {};
+else TWEAKS.cutoffs = JSON.parse(JSON.stringify(TWEAKS.cutoffs));
+// Legacy migration — if there's no 'all' entry but we still have the
+// pre-per-view initialTiles number, seed it as 'all' cutoffs.
+if (!Array.isArray(TWEAKS.cutoffs.all) && Number.isFinite(TWEAKS.initialTiles) && TWEAKS.initialTiles > 0) {
+  TWEAKS.cutoffs.all = [TWEAKS.initialTiles];
+}
+
+/* =========================================================================
+   CUTOFFS — per-view "See more" break points
+   -------------------------------------------------------------------------
+   Shape: { "all": [7], "year:2024": [4, 10], "year:2024:03": [] }
+   View key matches current filter state. Each array holds sorted,
+   deduplicated 1-indexed tile counts. [] (or missing) means no cutoffs
+   \u2192 show everything. persistCutoffs() saves the whole object back to
+   disk via the editmode host so the set survives reload.
+   ========================================================================= */
+const MAX_CUTOFFS = 20;
+
+function currentViewKey() {
+  if (activeYear === 'all') return 'all';
+  if (activeMonth === 'all') return 'year:' + activeYear;
+  return 'year:' + activeYear + ':' + activeMonth;
+}
+
+function getCutoffs(viewKey) {
+  // Auto-generated: one cutoff every 10 photos in the currently visible list.
+  // Ignores any cutoffs in TWEAKS — those are legacy.
+  const listLen = currentList().length;
+  if (listLen <= 10) return [];
+  const count = Math.floor((listLen - 1) / 10);
+  return Array.from({ length: count }, (_, i) => (i + 1) * 10);
+}
+
+function setCutoffs(viewKey, arr) {
+  const clean = Array.from(new Set(arr.filter(n => Number.isFinite(n) && n > 0).map(n => Math.floor(n))))
+    .sort((a, b) => a - b)
+    .slice(0, MAX_CUTOFFS);
+  if (!TWEAKS.cutoffs) TWEAKS.cutoffs = {};
+  if (clean.length === 0) {
+    delete TWEAKS.cutoffs[viewKey];
+  } else {
+    TWEAKS.cutoffs[viewKey] = clean;
+  }
+  persistCutoffs();
+  // Redraw the Tweaks-panel summary if it's on screen.
+  try { window.__yokitoriCutoffsInfoRedraw && window.__yokitoriCutoffsInfoRedraw(); } catch(_) {}
+}
+
+function persistCutoffs() {
+  // No-op: cutoffs are auto-generated from the visible list length.
+  // Runtime changes (e.g. if someone calls setCutoffs in devtools) are
+  // ephemeral — they won't survive a reload.
+}
+
+// "Shown by default" count for a view: first cutoff, or full length if none.
+function defaultShownFor(viewKey, listLen) {
+  const cs = getCutoffs(viewKey);
+  if (cs.length === 0) return listLen;
+  return Math.min(cs[0], listLen);
+}
+
+// Given visibleCount, compute the NEXT reveal target (next cutoff past it,
+// or list length if we're past the last cutoff).
+function nextRevealTarget(viewKey, listLen, currentVisible) {
+  const cs = getCutoffs(viewKey);
+  for (const c of cs) {
+    if (c > currentVisible) return Math.min(c, listLen);
+  }
+  return listLen;
+}
+
+/* =========================================================================
+   RENDER GRID — masonry, year + month filter, batched "see more"
+   ========================================================================= */
+const grid         = document.getElementById('grid');
+const yearFilter   = document.getElementById('yearFilter');
+const monthFilter  = document.getElementById('monthFilter');
+const frameCount   = document.getElementById('frameCount');
+const gridMore     = document.getElementById('gridMore');
+const seeMoreBtn   = document.getElementById('seeMoreBtn');
+const seeMoreCount = document.getElementById('seeMoreCount');
+
+let activeYear  = 'all';
+let activeMonth = 'all';
+// Track visibleCount per view so switching filters doesn't lose progress.
+let visibleByView = {};
+function getVisible() {
+  const key = currentViewKey();
+  if (visibleByView[key] == null) {
+    // Init to first cutoff of this view, or full length if none set.
+    const list = currentList();
+    visibleByView[key] = defaultShownFor(key, list.length);
+  }
+  return visibleByView[key];
+}
+function setVisible(n) { visibleByView[currentViewKey()] = n; }
+function resetVisibleForCurrentView() {
+  const list = currentList();
+  visibleByView[currentViewKey()] = defaultShownFor(currentViewKey(), list.length);
+}
+
+/* ============ ORDERING ============
+   Photos are sorted newest-first by capture date so the latest work
+   leads the gallery. After the date sort, a small layout-polish pass
+   nudges things so that no two tall (portrait) photos sit adjacent in
+   the linear sequence — with the masonry flowing column-first, two
+   adjacent items land stacked in the same column, and stacking two
+   portraits there reads as a heavy black bar that breaks the rhythm.
+   The polish only swaps a portrait a slot or two later, so the date
+   order is preserved almost exactly. The final order is cached in
+   window.__yokitoriOrderMap so applying or clearing year/month filters
+   doesn't disturb the sequence — the same photo always sits in the
+   same slot. */
+
+// Pull a comparable YYYYMMDDsss-style number out of a photo. Tries the
+// filename in p.img first (most reliable — repo photos encode the date
+// as dd_mm_yyyy plus an optional sequence), then falls back to parsing
+// the human-readable p.date string for legacy/inline entries. Photos
+// that can't be dated drop to the end of the list.
+function photoDateKey(p) {
+  if (!p) return -1;
+
+  // 1) Filename in the CDN URL — e.g. "15_03_2024_yokitori.webp"
+  if (p.img) {
+    const fname  = String(p.img).split('/').pop().split('?')[0];
+    const parsed = parsePhotoFilename(fname);
+    if (parsed) {
+      return parsed.year * 10000000
+           + parsed.month * 100000
+           + parsed.day   * 1000
+           + (parsed.seq || 0);
+    }
+  }
+
+  // 2) Fallback: pull year + month-name out of p.date ("15 Mar 2024",
+  //    "Mar 2024", etc.). Day isn't reliably extractable from free-form
+  //    strings, so we settle for month-level granularity here — that's
+  //    enough to keep dated entries roughly in the right place.
+  if (p.date) {
+    const s      = String(p.date);
+    const yMatch = s.match(/\b(19|20)\d{2}\b/);
+    const mMatch = s.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+    if (yMatch) {
+      const y        = parseInt(yMatch[0], 10);
+      const abbr     = mMatch ? mMatch[0].slice(0, 3).toLowerCase() : '';
+      const monthIdx = MONTH_NAMES.findIndex(n => n.toLowerCase() === abbr);
+      const m        = monthIdx >= 0 ? monthIdx + 1 : 0;
+      return y * 10000000 + m * 100000;
+    }
+  }
+
+  return -1;
+}
+
+// Stable sort by date desc. Ties (same date, or both undated) keep the
+// loader's original input order, which itself comes in date-sorted from
+// the GitHub fetch — so equal dates fall back to the seq-then-name
+// ordering established upstream. After the date sort we run a small
+// layout-polish pass so two portraits don't end up stacked in a column.
+function orderByDate(photos) {
+  const sorted = photos
+    .map((p, i) => ({ p, i, k: photoDateKey(p) }))
+    .sort((a, b) => (b.k - a.k) || (a.i - b.i))
+    .map(x => x.p);
+  return spreadTallApart(sorted);
+}
+
+// True if a photo is in portrait/tall orientation. Orientation is set
+// either from the sidecar JSON or auto-detected by the loader once the
+// image has loaded — until then orientation is undefined and the photo
+// is treated as non-tall, which is fine because the order map is
+// rebuilt after the orientation backfill completes.
+function isPhotoTall(p) {
+  if (!p) return false;
+  if (p.orientation === 'tall') return true;
+  if (p.orientation === 'wide' || p.orientation === 'square') return false;
+  if (p.aspect === 'tall') return true;
+  return false;
+}
+
+// Layout-polish pass: walk the array and, whenever two tall photos sit
+// adjacent, swap the second one with the nearest later non-tall — but
+// only if that non-tall is within SEARCH_WINDOW slots. The window cap
+// keeps the polish honest with its "small local nudge" promise: in a
+// gallery that is mostly portraits we'd otherwise teleport a single
+// landscape across the whole sequence to fill every gap, breaking the
+// date order more than it's worth. With 3 columns of masonry, anything
+// further than ~6 slots is in a different column anyway and wouldn't
+// break up the visual collision. Three bounded passes handle chains;
+// we exit early once a pass finds nothing to fix.
+function spreadTallApart(arr) {
+  const SEARCH_WINDOW = 6;
+  const out = arr.slice();
+  for (let pass = 0; pass < 3; pass++) {
+    let swaps = 0;
+    for (let i = 0; i < out.length - 1; i++) {
+      if (isPhotoTall(out[i]) && isPhotoTall(out[i + 1])) {
+        const limit = Math.min(out.length, i + 2 + SEARCH_WINDOW);
+        for (let j = i + 2; j < limit; j++) {
+          if (!isPhotoTall(out[j])) {
+            [out[i + 1], out[j]] = [out[j], out[i + 1]];
+            swaps++;
+            break;
+          }
+        }
+      }
+    }
+    if (swaps === 0) break;
+  }
+  return out;
+}
+
+function currentList() {
+  // Establish a persistent date-sorted order on first use. Filtering by
+  // year/month doesn't recompute the order — it just hides entries —
+  // so removing a filter restores the exact same sequence.
+  if (!window.__yokitoriOrderMap) {
+    const ordered = orderByDate(PHOTOS);
+    window.__yokitoriOrderMap = new Map(ordered.map((p, i) => [p, i]));
+  }
+
+  let list = PHOTOS.slice();
+  if (activeYear  !== 'all') list = list.filter(p => p.year  === activeYear);
+  if (activeMonth !== 'all') list = list.filter(p => p.month === activeMonth);
+
+  // Apply the cached order
+  const om = window.__yokitoriOrderMap;
+  list.sort((a, b) => (om.get(a) ?? 0) - (om.get(b) ?? 0));
+  return list;
+}
+
+function applyTweakStyles() {
+  const root = document.documentElement;
+  root.style.setProperty('--accent-custom', TWEAKS.accent);
+  root.style.setProperty('--rec', TWEAKS.accent);
+  // Only set --cols / --gap inline when the user has customized away from
+  // the defaults. Inline styles beat CSS media queries, so writing the
+  // defaults inline would silently break the responsive breakpoints below
+  // and leave mobile stuck on a 3-column desktop layout.
+  if (TWEAKS.columns !== TWEAK_DEFAULTS.columns) {
+    grid.style.setProperty('--cols', TWEAKS.columns);
+  } else {
+    grid.style.removeProperty('--cols');
+  }
+  if (TWEAKS.gap !== TWEAK_DEFAULTS.gap) {
+    grid.style.setProperty('--gap', TWEAKS.gap + 'px');
+  } else {
+    grid.style.removeProperty('--gap');
+  }
+  document.body.classList.toggle('no-meta',       !TWEAKS.showMeta);
+  document.body.classList.toggle('no-frame-num',  !TWEAKS.showFrameNum);
+  document.body.classList.toggle('no-cursor-dot', !TWEAKS.showCursorDot);
+  document.body.classList.toggle('no-fade-mask',  !TWEAKS.showFadeMask);
+  document.body.classList.toggle('no-hud',        !TWEAKS.showHud);
+  document.body.classList.toggle('no-status',     !TWEAKS.showStatus);
+  document.body.classList.toggle('monochrome',    !!TWEAKS.monochrome);
+  document.body.classList.toggle('arranging',     !!TWEAKS.arrangeMode);
+  grid.style.setProperty('--img-filter-boost', TWEAKS.imageFilter);
+}
+
+function renderGrid() {
+  grid.innerHTML = '';
+  const list = currentList();
+  const viewKey = currentViewKey();
+  const cutoffs = getCutoffs(viewKey);
+  const visibleCount = getVisible();
+
+  // Arrange mode now works in every view (filters or not). Cutoffs are
+  // per-view — the full list ("all") owns its own set, each year owns
+  // its own, each year+month owns its own. No more filters-blocks-arrange.
+  const filtersActive = (activeYear !== 'all' || activeMonth !== 'all');
+  document.body.classList.toggle('filters-active', filtersActive);
+  const arranging = !!TWEAKS.arrangeMode;
+  // Dividers render in arrange mode AND in normal mode (between revealed
+  // sections, to show the "see more" break). In normal mode they're
+  // read-only — no + / × / drag handles.
+  const showDividers = arranging; // authoring UI only while arranging
+  const cap = arranging ? list.length : Math.min(visibleCount, list.length);
+  const shouldCollapse = !arranging && TWEAKS.showFadeMask && cap < list.length;
+  grid.classList.toggle('collapsed', shouldCollapse);
+
+  // Build a set of cutoff positions that fall within the render range so
+  // we can insert a divider just before tile k = cutoff.
+  const cutoffSet = new Set(cutoffs.filter(c => c <= list.length));
+
+  for (let k = 0; k < cap; k++) {
+    // Insert any divider whose position equals k (may stack; skip if 0).
+    if (showDividers && cutoffSet.has(k) && k > 0) {
+      grid.appendChild(makeCutoffDivider(k, list.length));
+    }
+
+    const p = list[k];
+    const i = PHOTOS.indexOf(p);
+    const div = document.createElement('div');
+    const explicitTall  = p.aspect === 'tall'  || p.orientation === 'tall';
+    const explicitShort = p.aspect === 'short' || p.orientation === 'wide' || p.orientation === 'square';
+    div.className = `frame reveal ${explicitTall ? 'tall' : ''}`;
+    div.setAttribute('data-i', i);
+    div.setAttribute('data-k', k);
+    if (arranging) div.setAttribute('draggable', 'true');
+    div.innerHTML = `
+      <div class="frame-num">N° ${p.num}</div>
+      <div class="frame-focus">AF LOCK</div>
+      <div class="frame-img-wrap">
+        <img loading="lazy" src="${p.img}" alt="${p.title}" />
+      </div>
+      <div class="c1"></div><div class="c2"></div>
+      <div class="frame-meta">
+        <span class="title">${p.title}</span>
+        <span class="loc">${p.loc}</span>
+      </div>
+    `;
+    if (!explicitTall && !explicitShort) {
+      const img = div.querySelector('img');
+      const decide = () => {
+        if (!img.naturalWidth || !img.naturalHeight) return;
+        if (img.naturalHeight > img.naturalWidth * 1.05) {
+          div.classList.add('tall');
+        }
+      };
+      if (img.complete) decide();
+      else img.addEventListener('load', decide, { once: true });
+    }
+    if (arranging) {
+      bindTileDrag(div, p, k);
+    } else {
+      div.addEventListener('click', () => openModal(i));
+    }
+    grid.appendChild(div);
+    requestAnimationFrame(() => div.classList.add('in'));
+  }
+
+  // Trailing divider: if a cutoff equals list.length exactly, render it
+  // at the end so the user can drag or remove it.
+  if (showDividers && cutoffSet.has(list.length) && list.length > 0) {
+    grid.appendChild(makeCutoffDivider(list.length, list.length));
+  }
+  // "Add first cutoff" helper — if arranging and this view has no
+  // REACHABLE cutoffs (either none set, or all of them are past the end
+  // of the current list), show a ghost divider at the end so there's
+  // always a way to seed one.
+  const reachableCutoffs = cutoffs.filter(c => c > 0 && c < list.length);
+  if (showDividers && reachableCutoffs.length === 0 && list.length > 1) {
+    grid.appendChild(makeGhostCutoffDivider(list.length));
+  }
+
+  const total = String(list.length).padStart(3, '0');
+  frameCount.textContent = total;
+  const sbFrameTotal = document.getElementById('sbFrameTotal');
+  if (sbFrameTotal) sbFrameTotal.textContent = total;
+
+  // See-more button: hidden while arranging (full list is always shown).
+  if (arranging) {
+    gridMore.classList.add('hidden');
+    return;
+  }
+
+  // In normal mode, button reveals the NEXT section (up to the next
+  // cutoff in this view, or the rest of the list if we're past the last).
+  const initialShown = defaultShownFor(viewKey, list.length);
+  const remaining = list.length - cap;
+
+  // See-less: visible whenever we're showing more than the initial batch
+  const seeLessBtn = document.getElementById('seeLessBtn');
+  if (seeLessBtn) {
+    seeLessBtn.hidden = (visibleCount <= initialShown);
+  }
+
+  if (remaining <= 0) {
+    // Everything's visible — hide the "more" button
+    seeMoreBtn.hidden = true;
+    // But keep "less" visible if we can collapse
+    const canCollapse = visibleCount > initialShown;
+    if (canCollapse) {
+      gridMore.classList.remove('hidden');
+    } else {
+      gridMore.classList.add('hidden');
+    }
+  } else {
+    // Reveal up to the next cutoff (or end of list).
+    const nextTarget = nextRevealTarget(viewKey, list.length, visibleCount);
+    const nextBatch = Math.max(1, nextTarget - visibleCount);
+    gridMore.classList.remove('hidden');
+    seeMoreBtn.hidden = false;
+    seeMoreBtn.classList.remove('expanded');
+    seeMoreBtn.querySelector('.sm-label').textContent = `See ${nextBatch} more`;
+    seeMoreCount.textContent = '+' + String(remaining).padStart(2, '0');
+  }
+}
+
+/* =========================================================================
+   ARRANGE MODE — drag tiles to reorder, drag divider to set cutoff
+   -------------------------------------------------------------------------
+   Mutates PHOTOS directly (it's the live source for the gallery). The
+   dataset editor's WORKING array is rebuilt from PHOTOS next time its
+   overlay opens, so the two stay in sync without explicit plumbing.
+   ========================================================================= */
+let dragSrc = null;     // 'tile' | 'cutoff'
+let dragIndex = -1;     // global index in PHOTOS for tiles
+let dragCutoffPos = -1; // when dragging a cutoff divider, its current position
+
+// Build a real cutoff divider at `pos` for the current view, given a list
+// of total items. Includes + and × controls (arrange-mode only) and is
+// draggable to reposition. `pos` is a 1-indexed tile count (= index of
+// the first tile that should sit BELOW the fold).
+function makeCutoffDivider(pos, total) {
+  const d = document.createElement('div');
+  d.className = 'cutoff-divider';
+  d.setAttribute('draggable', 'true');
+  d.dataset.pos = String(pos);
+  const viewKey = currentViewKey();
+  const viewLabel =
+    viewKey === 'all' ? 'ALL' :
+    activeMonth === 'all' ? activeYear :
+    activeYear + ' · ' + MONTH_LABELS[activeMonth];
+  d.innerHTML = `
+    <button class="cd-btn cd-remove" type="button" aria-label="Remove this cutoff" title="Remove cutoff">×</button>
+    <button class="cd-btn cd-add" type="button" aria-label="Add another cutoff after this one" title="Add cutoff below">+</button>
+    <strong>⎯ SEE MORE · ${viewLabel} ⎯</strong><br>
+    Break at ${pos} / ${total} · Drag to move
+  `;
+
+  d.querySelector('.cd-remove').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const cur = getCutoffs(viewKey).filter(c => c !== pos);
+    setCutoffs(viewKey, cur);
+    resetVisibleForCurrentView();
+    renderGrid();
+  });
+  d.querySelector('.cd-add').addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Insert a new cutoff halfway between `pos` and the next cutoff (or
+    // list end). Guarantees the new cutoff is > pos so we always add one.
+    const cs = getCutoffs(viewKey);
+    const next = cs.find(c => c > pos) ?? total;
+    if (next - pos < 2) {
+      // No room — try to add just after pos if list has more items.
+      if (pos + 1 <= total && !cs.includes(pos + 1)) {
+        setCutoffs(viewKey, [...cs, pos + 1]);
+      } else {
+        return; // nothing to add
+      }
+    } else {
+      const mid = pos + Math.floor((next - pos) / 2);
+      setCutoffs(viewKey, [...cs, mid]);
+    }
+    renderGrid();
+  });
+
+  d.addEventListener('dragstart', (e) => {
+    // Don't initiate drag when the user grabbed a button.
+    if (e.target.closest('.cd-btn')) { e.preventDefault(); return; }
+    dragSrc = 'cutoff';
+    dragCutoffPos = pos;
+    d.classList.add('ds-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', 'cutoff:' + pos); } catch(_) {}
+  });
+  d.addEventListener('dragend', () => {
+    dragSrc = null;
+    dragCutoffPos = -1;
+    d.classList.remove('ds-dragging');
+    grid.querySelectorAll('.ds-drop-target').forEach(n => n.classList.remove('ds-drop-target'));
+  });
+  // Accept tiles dropped ON the divider — inserts the tile at this cutoff's boundary.
+  d.addEventListener('dragover', (e) => {
+    if (dragSrc !== 'tile') return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    grid.querySelectorAll('.ds-drop-target').forEach(n => n.classList.remove('ds-drop-target'));
+    d.classList.add('ds-drop-target');
+  });
+  d.addEventListener('drop', (e) => {
+    if (dragSrc !== 'tile') return;
+    e.preventDefault();
+    d.classList.remove('ds-drop-target');
+    const list = currentList();
+    const targetPhoto = list[pos]; // first "below the fold" photo for this cutoff
+    const moved = PHOTOS.splice(dragIndex, 1)[0];
+    if (targetPhoto) {
+      const insertAt = PHOTOS.indexOf(targetPhoto);
+      PHOTOS.splice(insertAt, 0, moved);
+    } else {
+      PHOTOS.push(moved);
+    }
+    renumberPhotos();
+    renderGrid();
+  });
+  return d;
+}
+
+// Ghost divider — shown when a view has no cutoffs yet. Clicking it
+// seeds a cutoff at the default position (half the list).
+function makeGhostCutoffDivider(total) {
+  const d = document.createElement('div');
+  d.className = 'cutoff-divider cutoff-ghost';
+  d.innerHTML = `
+    <button class="cd-btn cd-add" type="button" aria-label="Add a cutoff to this view" title="Add first cutoff">+</button>
+    <strong>⎯ NO CUTOFFS IN THIS VIEW ⎯</strong><br>
+    Click + to add a "See more" break
+  `;
+  d.querySelector('.cd-add').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const viewKey = currentViewKey();
+    const pos = Math.max(1, Math.min(total - 1, Math.ceil(total / 2)));
+    setCutoffs(viewKey, [pos]);
+    renderGrid();
+  });
+  return d;
+}
+
+function bindTileDrag(el, p, k) {
+  el.addEventListener('dragstart', (e) => {
+    dragSrc = 'tile';
+    dragIndex = PHOTOS.indexOf(p);
+    el.classList.add('ds-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', 'tile:' + dragIndex); } catch(_) {}
+  });
+  el.addEventListener('dragend', () => {
+    dragSrc = null;
+    el.classList.remove('ds-dragging');
+    grid.querySelectorAll('.ds-drop-target').forEach(n => n.classList.remove('ds-drop-target'));
+  });
+  el.addEventListener('dragover', (e) => {
+    if (!dragSrc) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    grid.querySelectorAll('.ds-drop-target').forEach(n => n.classList.remove('ds-drop-target'));
+    el.classList.add('ds-drop-target');
+  });
+  el.addEventListener('drop', (e) => {
+    e.preventDefault();
+    el.classList.remove('ds-drop-target');
+    const targetList = currentList();
+    const targetPhoto = p;
+    const targetK = targetList.indexOf(targetPhoto);
+    if (dragSrc === 'tile') {
+      // Reorder PHOTOS: move source photo to position just before this tile's global index.
+      const fromGlobal = dragIndex;
+      const toGlobal = PHOTOS.indexOf(targetPhoto);
+      if (fromGlobal < 0 || toGlobal < 0 || fromGlobal === toGlobal) return;
+      // Decide: drop on left half → before, right half → after
+      const rect = el.getBoundingClientRect();
+      const before = (e.clientX - rect.left) < rect.width / 2;
+      const moved = PHOTOS.splice(fromGlobal, 1)[0];
+      let insertAt = PHOTOS.indexOf(targetPhoto);
+      if (!before) insertAt += 1;
+      PHOTOS.splice(insertAt, 0, moved);
+      renumberPhotos();
+      renderGrid();
+    } else if (dragSrc === 'cutoff') {
+      // Move THIS cutoff to a new position in the current view.
+      const viewKey = currentViewKey();
+      const rect = el.getBoundingClientRect();
+      const before = (e.clientX - rect.left) < rect.width / 2;
+      let newPos = before ? targetK : targetK + 1;
+      newPos = Math.max(1, Math.min(targetList.length, newPos));
+      const cur = getCutoffs(viewKey).filter(c => c !== dragCutoffPos);
+      if (!cur.includes(newPos)) cur.push(newPos);
+      setCutoffs(viewKey, cur);
+      resetVisibleForCurrentView();
+      renderGrid();
+    }
+  });
+}
+
+function renumberPhotos() {
+  PHOTOS.forEach((p, i) => { p.num = String(i + 1).padStart(3, '0'); });
+  try { localStorage.removeItem('yokitori:dataset-autosave:v1'); } catch(_) {}
+}
+
+seeMoreBtn.addEventListener('click', () => {
+  const list = currentList();
+  const viewKey = currentViewKey();
+  const visibleCount = getVisible();
+  if (visibleCount < list.length) {
+    setVisible(nextRevealTarget(viewKey, list.length, visibleCount));
+    renderGrid();
+  }
+});
+
+// "See less" — step back one cutoff at a time
+const seeLessBtnRef = document.getElementById('seeLessBtn');
+if (seeLessBtnRef) {
+  seeLessBtnRef.addEventListener('click', () => {
+    const list = currentList();
+    const viewKey = currentViewKey();
+    const visibleCount = getVisible();
+    const cutoffs = getCutoffs(viewKey);
+    // largest cutoff strictly less than current visible
+    const prev = cutoffs.filter(c => c < visibleCount).pop();
+    const target = prev || defaultShownFor(viewKey, list.length);
+    setVisible(target);
+    renderGrid();
+    // Gentle scroll back if we collapsed past the current scroll position
+    const gal = document.getElementById('work');
+    if (gal) {
+      const top = gal.getBoundingClientRect().top;
+      if (top < -20) window.scrollTo({ top: gal.offsetTop - 40, behavior: 'smooth' });
+    }
+  });
+}
+
+function renderYearPills() {
+  yearFilter.innerHTML = '';
+  const pills = [{ y: 'all', label: 'All', count: PHOTOS.length }]
+    .concat(YEARS.map(y => ({ y, label: y, count: PHOTOS.filter(p => p.year === y).length })));
+  pills.forEach(({ y, label, count }) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'year-pill' + (y === activeYear ? ' active' : '');
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', y === activeYear ? 'true' : 'false');
+    b.innerHTML = `${label}<span class="count">${String(count).padStart(2, '0')}</span>`;
+    b.addEventListener('click', () => {
+      if (activeYear === y) return;
+      activeYear = y;
+      activeMonth = 'all';
+      resetVisibleForCurrentView();
+      renderYearPills();
+      renderMonthPills();
+      renderGrid();
+    });
+    yearFilter.appendChild(b);
+  });
+}
+
+function renderMonthPills() {
+  monthFilter.innerHTML = '';
+  // Months are only shown when a year is selected, to keep the chrome quiet.
+  if (activeYear === 'all') return;
+  const scoped = PHOTOS.filter(p => p.year === activeYear);
+  const monthsInYear = [...new Set(scoped.map(p => p.month).filter(Boolean))]
+    .sort((a,b) => MONTH_NAMES.indexOf(a) - MONTH_NAMES.indexOf(b));
+  if (monthsInYear.length <= 1) return;
+
+  const pills = [{ m: 'all', label: 'All months', count: scoped.length }]
+    .concat(monthsInYear.map(m => ({ m, label: m, count: scoped.filter(p => p.month === m).length })));
+  pills.forEach(({ m, label, count }) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'month-pill' + (m === activeMonth ? ' active' : '');
+    b.innerHTML = `${label}<span class="count">${String(count).padStart(2, '0')}</span>`;
+    b.addEventListener('click', () => {
+      if (activeMonth === m) return;
+      activeMonth = m;
+      resetVisibleForCurrentView();
+      renderMonthPills();
+      renderGrid();
+    });
+    monthFilter.appendChild(b);
+  });
+}
+
+applyTweakStyles();
+renderYearPills();
+renderMonthPills();
+renderGrid();
+
+// Auto-discover photos. Discovery order:
+//
+//   1. GitHub Contents API (PRIMARY) — always real-time, reflects pushes and
+//      deletes immediately. Anonymous limit is 60 req/hour per IP which is
+//      fine for normal visitors.
+//   2. jsDelivr data API (FALLBACK) — used only if GitHub API is unreachable.
+//      Cached at the edge; can lag 10-15 min behind GitHub, so deleted files
+//      may still appear briefly. Images are always served from jsDelivr CDN
+//      regardless of which discovery path ran.
+//
+// Push or delete photos on GitHub — the gallery updates on the next page load.
+(async () => {
+  // Show a loading indicator in the gallery while discovery runs.
+  const gridEl = document.getElementById('grid');
+  if (gridEl && !PHOTOS.length) {
+    gridEl.innerHTML = `<p style="color:var(--ink-dim);font-size:13px;letter-spacing:.14em;padding:40px 0;grid-column:1/-1;text-align:center;">LOADING FRAMES…</p>`;
+  }
+
+  let discovered = 0;
+
+  // PRIMARY: GitHub Contents API — always shows the current state of the repo.
+  try {
+    discovered = await loadFromGitHub();
+    console.log(`[yokitori] auto-discovered ${discovered} photos via GitHub API`);
+    tryDeepLink();
+    return;
+  } catch (err) {
+    console.warn('[yokitori] GitHub API discovery failed:', err.message);
+  }
+
+  // FALLBACK: jsDelivr data API — may lag behind deletes/adds by ~15 min.
+  try {
+    discovered = await loadFromJsDelivr();
+    console.log(`[yokitori] auto-discovered ${discovered} photos via jsDelivr (may be cached)`);
+    tryDeepLink();
+  } catch (err) {
+    console.warn('[yokitori] jsDelivr discovery also failed:', err.message);
+    if (gridEl && !PHOTOS.length) {
+      gridEl.innerHTML = `<p style="color:var(--ink-dim);font-size:12px;letter-spacing:.14em;padding:40px 0;grid-column:1/-1;text-align:center;">
+        COULD NOT LOAD FRAMES — check that the GitHub repo is public,<br>
+        the branch name is correct, and the photos/ folder exists.<br>
+        <span style="color:var(--ink-dimmer);font-size:11px;">${err.message}</span>
+      </p>`;
+    }
+  }
+})();
+
+/* =========================================================================
+   MODAL — with iris, keyboard nav, thumbs, typing EXIF
+   ========================================================================= */
+
+/* Coordinate helpers — accept DMS (e.g. 26°27'14.6"N 88°36'50.0"E) or plain
+   decimal ("26.4540, 88.6139") and build a Google Maps URL. Falls back to
+   passing the raw string to Maps if parsing fails. */
+function parseCoords(raw) {
+  if (!raw) return null;
+  const s = String(raw).trim();
+
+  // DMS: 26°27'14.6"N 88°36'50.0"E   (also accepts ′ ″ and , separator)
+  const dms = s.match(
+    /^\s*(\d+)\s*[°º]\s*(\d+)\s*['′]\s*([\d.]+)\s*["″]\s*([NSns])[\s,]+(\d+)\s*[°º]\s*(\d+)\s*['′]\s*([\d.]+)\s*["″]\s*([EWew])\s*$/
+  );
+  if (dms) {
+    const toDec = (d, m, sec, hem) => {
+      let v = +d + (+m) / 60 + (+sec) / 3600;
+      if (/[SsWw]/.test(hem)) v = -v;
+      return v;
+    };
+    const lat = toDec(dms[1], dms[2], dms[3], dms[4]);
+    const lng = toDec(dms[5], dms[6], dms[7], dms[8]);
+    return { lat, lng };
+  }
+
+  // Decimal: 26.4540, 88.6139   (also accepts space separator)
+  const dec = s.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if (dec) {
+    return { lat: +dec[1], lng: +dec[2] };
+  }
+  return null;
+}
+
+function googleMapsUrlFor(raw) {
+  const parsed = parseCoords(raw);
+  if (parsed) {
+    return `https://www.google.com/maps?q=${parsed.lat.toFixed(6)},${parsed.lng.toFixed(6)}`;
+  }
+  return `https://www.google.com/maps?q=${encodeURIComponent(String(raw).trim())}`;
+}
+
+const modal = document.getElementById('modal');
+const mImg = document.getElementById('mImg');
+const mTitle = document.getElementById('mTitle');
+const mKicker = document.getElementById('mKicker');
+const mSubline = document.getElementById('mSubline');
+const mCoords = document.getElementById('mCoords');
+const mBody = document.getElementById('mBody');
+const mExif = document.getElementById('mExif');
+const mLabelNum = document.getElementById('mLabelNum');
+const mClose = document.getElementById('mClose');
+const mPrev = document.getElementById('mPrev');
+const mNext = document.getElementById('mNext');
+const mStrip = document.getElementById('mStrip');
+
+/* Hold-to-magnify on the modal image.
+   Press & hold (mouse/touch) → scales up and follows the pointer.
+   Release → back to fit. */
+(function magnify(){
+  const wrap  = document.querySelector('.modal-img-wrap');
+  const frame = document.querySelector('.modal-img-frame');
+  if (!wrap || !frame) return;
+  let held = false;
+
+  function setOrigin(clientX, clientY) {
+    const r = frame.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * 100;
+    const y = Math.max(0, Math.min(1, (clientY - r.top) / r.height)) * 100;
+    wrap.style.setProperty('--mx', x + '%');
+    wrap.style.setProperty('--my', y + '%');
+  }
+  function start(e){
+    held = true;
+    wrap.classList.add('magnify');
+    const p = e.touches ? e.touches[0] : e;
+    setOrigin(p.clientX, p.clientY);
+  }
+  function move(e){
+    if (!held) return;
+    const p = e.touches ? e.touches[0] : e;
+    setOrigin(p.clientX, p.clientY);
+  }
+  function end(){
+    held = false;
+    wrap.classList.remove('magnify');
+  }
+  frame.addEventListener('mousedown', start);
+  frame.addEventListener('mousemove', move);
+  frame.addEventListener('mouseup', end);
+  frame.addEventListener('mouseleave', end);
+  frame.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, { passive: false });
+  frame.addEventListener('touchmove',  (e) => { e.preventDefault(); move(e);  }, { passive: false });
+  frame.addEventListener('touchend', end);
+  frame.addEventListener('touchcancel', end);
+  frame.addEventListener('contextmenu', (e) => e.preventDefault());
+  frame.addEventListener('dragstart',  (e) => e.preventDefault());
+  frame.addEventListener('selectstart',(e) => e.preventDefault());
+})();
+const iris = document.getElementById('iris');
+
+let currentIdx = -1;
+
+// Build thumbnail strip once. Hide entirely if there's only one photo —
+// no reason to show a 1-item navigation strip, and on mobile it would
+// eat vertical space for no benefit.
+if (PHOTOS.length <= 1) {
+  mStrip.style.display = 'none';
+} else {
+  PHOTOS.forEach((p, i) => {
+    const t = document.createElement('div');
+    t.className = 'thumb';
+    t.setAttribute('data-i', i);
+    t.innerHTML = `<img loading="lazy" src="${p.img}" alt="" />`;
+    t.addEventListener('click', () => renderPhoto(i));
+    mStrip.appendChild(t);
+  });
+}
+
+function setThumbActive(i){
+  document.querySelectorAll('.thumb').forEach(t => {
+    t.classList.toggle('active', parseInt(t.getAttribute('data-i'),10) === i);
+  });
+}
+
+function renderPhoto(i) {
+  currentIdx = i;
+  // Keep the URL hash in sync with the photo currently being viewed, so
+  // copying the URL at any moment yields a shareable link to THIS photo.
+  // We use replaceState (not pushState) — the back button should always
+  // close the modal in one tap, no matter how many photos the user has
+  // browsed through within this session.
+  if (modalHistoryPushed) {
+    const slug = photoSlug(PHOTOS[i]);
+    if (slug) {
+      const newUrl = '#' + slug;
+      if (location.hash !== newUrl) {
+        history.replaceState({ modal: true, slug }, '', newUrl);
+      }
+    }
+  }
+  const p = PHOTOS[i];
+  // Fade image out during swap
+  mImg.classList.remove('shown');
+  // Trigger the text-swap transition: all text fields (label, kicker, title,
+  // subline, coords, body) fade out and lift via CSS while we wait the 150ms
+  // before swapping in the new content.
+  modal.classList.add('text-swap');
+  setTimeout(() => {
+    mImg.src = p.img;
+    mImg.alt = p.title;
+    mTitle.textContent = p.title;
+    mKicker.textContent = `Frame N° ${p.num}`;
+    mLabelNum.textContent = `N° ${p.num}`;
+    mSubline.innerHTML = `<span>${p.loc}</span><span>${p.date}</span>`;
+
+    // Coordinates — only render if set, click opens Google Maps in new tab
+    if (p.coords && String(p.coords).trim()) {
+      const raw = String(p.coords).trim();
+      const url = googleMapsUrlFor(raw);
+      const safeLabel = raw.replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+      mCoords.innerHTML =
+        `<a href="${url}" target="_blank" rel="noopener noreferrer" title="Open in Google Maps">` +
+          `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
+            `<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>` +
+            `<circle cx="12" cy="10" r="3"/>` +
+          `</svg>` +
+          `<span>${safeLabel}</span>` +
+          `<span class="ext">↗</span>` +
+        `</a>`;
+      mCoords.hidden = false;
+    } else {
+      mCoords.innerHTML = '';
+      mCoords.hidden = true;
+    }
+
+    mBody.textContent = p.body;
+
+    // Build EXIF cells, stagger them in
+    const exifData = [
+      ['Camera',   p.exif.camera],
+      ['Lens',     p.exif.lens],
+      ['ISO',      p.exif.iso],
+      ['Aperture', p.exif.f],
+      ['Shutter',  p.exif.s],
+      ['Focal',    p.exif.focal]
+    ];
+    mExif.innerHTML = exifData.map(([k,v]) =>
+      `<div class="exif-cell"><span class="k">${k}</span><span class="v">${v}</span></div>`
+    ).join('');
+
+    // Animate entries — remove .text-swap on the next frame so the browser
+    // commits the new text content before starting the fade-in transition.
+    requestAnimationFrame(() => {
+      modal.classList.remove('text-swap');
+    });
+
+    const cells = mExif.querySelectorAll('.exif-cell');
+    cells.forEach((c, idx) => {
+      setTimeout(() => c.classList.add('in'), 120 + idx * 70);
+    });
+
+    // Show img once loaded. Compute a frame box that is the LARGEST rectangle
+    // matching the image's aspect ratio that fits inside the wrap.
+    const frame = mImg.closest('.modal-img-frame');
+    const wrap  = mImg.closest('.modal-img-wrap');
+    function fit(){
+      if (frame && wrap && mImg.naturalWidth && mImg.naturalHeight) {
+        const ratio = mImg.naturalWidth / mImg.naturalHeight;
+        const wrapR = wrap.getBoundingClientRect();
+        let w = wrapR.width, h = wrapR.width / ratio;
+        if (h > wrapR.height) { h = wrapR.height; w = h * ratio; }
+        frame.style.width  = w + 'px';
+        frame.style.height = h + 'px';
+      }
+      mImg.classList.add('shown');
+    }
+    if (mImg.complete && mImg.naturalWidth) fit();
+    else mImg.onload = fit;
+    // Keep frame sized correctly on resize while modal is open.
+    if (!window.__mFitBound) {
+      window.__mFitBound = true;
+      window.addEventListener('resize', () => {
+        if (modal.classList.contains('open')) fit();
+      });
+    }
+
+    setThumbActive(i);
+  }, 150);
+}
+
+// =========================================================================
+// SHAREABLE LINKS — derive a URL slug from each photo's filename, so a
+// link like https://ahad-hossin.github.io/Photography/#Above_What_Holds_You
+// will deep-open the corresponding photo's details modal. The slug is
+// just the filename with the "_yokitori_Ahad_Hossin.<ext>" suffix removed
+// (case-insensitive). If the suffix isn't present, we fall back to the
+// bare filename without extension. Returns null if the photo has no img.
+// =========================================================================
+function photoSlug(p) {
+  if (!p || !p.img) return null;
+  // Skip data: URIs (placeholder SVGs) — those aren't shareable.
+  if (p.img.startsWith('data:')) return null;
+  const file = p.img.split('/').pop().split('?')[0].split('#')[0];
+  const stripped = file.match(/^(.+?)_yokitori_Ahad_Hossin\.\w+$/i);
+  if (stripped) return stripped[1];
+  return file.replace(/\.\w+$/, '');
+}
+
+// Find the index of the photo matching a given slug (case-insensitive).
+// Returns -1 if no photo matches — used so old/renamed shared links just
+// gracefully fall back to the gallery instead of erroring out.
+function indexBySlug(slug) {
+  if (!slug) return -1;
+  const lc = decodeURIComponent(slug).toLowerCase();
+  for (let i = 0; i < PHOTOS.length; i++) {
+    const s = photoSlug(PHOTOS[i]);
+    if (s && s.toLowerCase() === lc) return i;
+  }
+  return -1;
+}
+
+// Tracks whether we've pushed a history entry for the open modal so that
+// the browser/OS back button (desktop chrome back arrow, Android back
+// gesture, iOS swipe-from-edge) can close the modal instead of leaving
+// the site. We only push ONCE per modal session, even though renderPhoto
+// can be re-run many times (next/prev/thumb clicks) within that session.
+let modalHistoryPushed = false;
+
+function openModal(i) {
+  // Bump the "shots taken" status-bar counter — photographer vibe:
+  // every frame pulled up during the session counts as a shot.
+  const sc = document.getElementById('shotCount');
+  if (sc) {
+    const n = (parseInt(sc.textContent, 10) || 0) + 1;
+    sc.textContent = String(n).padStart(3, '0');
+  }
+  // Push a history entry so the browser's back button closes this modal
+  // instead of navigating away from the site. We also encode the photo's
+  // slug into the URL hash here, which makes the current URL shareable —
+  // anyone opening that link will land directly on this photo's details.
+  // The popstate handler below listens for the back action and runs
+  // closeModal-without-pop.
+  if (!modalHistoryPushed) {
+    const slug = photoSlug(PHOTOS[i]);
+    const url  = slug ? '#' + slug : location.pathname + location.search;
+    history.pushState({ modal: true, slug }, '', url);
+    modalHistoryPushed = true;
+  }
+  // Play iris close → (swap photo) → open.
+  // Timing matches the CSS: blades transition 0.62s, bg fades 0.28s.
+  // We wait for the blades to fully close, swap the modal content behind
+  // the solid iris, then trigger the open by removing .closing.
+  iris.classList.add('active', 'closing');
+  setTimeout(() => {
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    renderPhoto(i);
+    // Small settle beat so the browser paints the modal under the iris
+    // BEFORE we start opening — otherwise the newly-painted modal can
+    // flicker through a partially-open iris.
+    setTimeout(() => {
+      iris.classList.remove('closing');
+      setTimeout(() => iris.classList.remove('active'), 680);
+    }, 80);
+  }, 640);
+}
+
+function closeModal() {
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  currentIdx = -1;
+  // If we have a pushed history entry (modal was opened normally), pop it
+  // so the history stack stays tidy. The popstate handler below sees the
+  // modal is already closed and does nothing — preventing a double-close.
+  if (modalHistoryPushed) {
+    modalHistoryPushed = false;
+    history.back();
+  }
+}
+
+// Browser/OS back button → close the modal (do NOT call history.back()
+// here, the back action has already happened).
+window.addEventListener('popstate', () => {
+  if (modal.classList.contains('open')) {
+    modalHistoryPushed = false;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    currentIdx = -1;
+  }
+});
+
+function nextPhoto(){ if (currentIdx < 0) return; renderPhoto((currentIdx + 1) % PHOTOS.length); }
+function prevPhoto(){ if (currentIdx < 0) return; renderPhoto((currentIdx - 1 + PHOTOS.length) % PHOTOS.length); }
+
+mClose.addEventListener('click', closeModal);
+mPrev.addEventListener('click', prevPhoto);
+mNext.addEventListener('click', nextPhoto);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+document.addEventListener('keydown', (e) => {
+  if (!modal.classList.contains('open')) return;
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'ArrowLeft') prevPhoto();
+  if (e.key === 'ArrowRight') nextPhoto();
+});
+
+/* =========================================================================
+   TOUCH SWIPE — swipe horizontally anywhere in the modal to step between
+   photos, EXCEPT when the gesture starts on the photo itself (that area
+   is owned by the press-and-hold magnify) or on the thumbnail strip
+   (which has its own horizontal scroll). Listeners are passive so vertical
+   scrolling inside the data panel keeps working — a gesture only counts as
+   a swipe when horizontal travel passes the threshold and clearly
+   dominates the vertical travel.
+   ========================================================================= */
+(function modalSwipe(){
+  if (!modal) return;
+  let startX = 0, startY = 0, tracking = false;
+  const THRESHOLD = 50;     // min horizontal travel in px to count as a swipe
+  const H_DOMINANCE = 1.3;  // horizontal must beat vertical by this factor
+
+  modal.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) { tracking = false; return; }
+    // Skip touches that originate on the photo or the thumbnail strip —
+    // those areas have their own gesture handling.
+    const tgt = e.target;
+    if (tgt && tgt.closest && (tgt.closest('.modal-img-frame') || tgt.closest('.modal-strip'))) {
+      tracking = false;
+      return;
+    }
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, { passive: true });
+
+  modal.addEventListener('touchend', (e) => {
+    if (!tracking) return;
+    tracking = false;
+    if (!modal.classList.contains('open')) return;
+    const t  = e.changedTouches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    if (Math.abs(dx) >= THRESHOLD && Math.abs(dx) > Math.abs(dy) * H_DOMINANCE) {
+      if (dx > 0) prevPhoto();   // swipe right → previous (matches arrow-left)
+      else        nextPhoto();   // swipe left  → next     (matches arrow-right)
+    }
+  }, { passive: true });
+
+  modal.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
+})();
+
+/* =========================================================================
+   SCROLL REVEAL
+   ========================================================================= */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((e) => {
+    if (e.isIntersecting) {
+      const i = parseInt(e.target.getAttribute('data-i') || 0, 10);
+      setTimeout(() => e.target.classList.add('in'), (i % 3) * 80);
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+/* =========================================================================
+   SESSION TIMER (elapsed since page load) + hero date (Tokyo)
+   ========================================================================= */
+(function sessionTimer(){
+  const elT = document.getElementById('clock');
+  const elD = document.getElementById('heroDate');
+  const startedAt = performance.now();
+
+  // Date stays real, anchored to Tokyo for the photographer vibe.
+  if (elD) {
+    const now = new Date();
+    const tok = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 9 * 3600000);
+    const y  = tok.getFullYear();
+    const mo = String(tok.getMonth() + 1).padStart(2, '0');
+    const d  = String(tok.getDate()).padStart(2, '0');
+    elD.textContent = `${y} · ${mo} · ${d}`;
+  }
+
+  // Modal copyright year — auto-updates every January 1st.
+  const elY = document.getElementById('mcYear');
+  if (elY) elY.textContent = new Date().getFullYear();
+
+  function render() {
+    const sec = Math.floor((performance.now() - startedAt) / 1000);
+    const hh = String(Math.floor(sec / 3600)).padStart(2, '0');
+    const mm = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const ss = String(sec % 60).padStart(2, '0');
+    elT.textContent = `${hh}:${mm}:${ss}`;
+  }
+  render();
+  setInterval(render, 1000);
+})();
+
+/* =========================================================================
+   BATTERY — slow drain and recharge simulation
+   ========================================================================= */
+(function battery(){
+  const fill = document.getElementById('battFill');
+  const txt  = document.getElementById('battTxt');
+  let level = 72;
+  let direction = -1;
+  function tick(){
+    level += direction * (Math.random() * 0.4 + 0.1);
+    if (level <= 18) direction = 1;
+    if (level >= 94) direction = -1;
+    const pct = Math.round(level);
+    fill.style.transform = `scaleX(${level/100})`;
+    fill.classList.toggle('low', level < 25);
+    txt.textContent = pct + '%';
+  }
+  setInterval(tick, 1400);
+})();
+
+/* =========================================================================
+   MEMORY COUNTER — randomly ticks up every few seconds
+   ========================================================================= */
+(function memory(){
+  const el = document.getElementById('memUsed');
+  let n = 247;
+  setInterval(() => {
+    if (Math.random() > 0.5) {
+      n++;
+      el.textContent = String(n).padStart(5, '0');
+    }
+  }, 2500);
+})();
+
+/* =========================================================================
+   SCROLL-LINKED FRAME COUNTER + PROGRESS BAR
+   ========================================================================= */
+(function scrollTelemetry(){
+  const sbFrame  = document.getElementById('sbFrame');
+  const prog     = document.getElementById('scrollProg');
+
+  function onScroll(){
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - window.innerHeight;
+    const pct = max > 0 ? (window.scrollY / max) : 0;
+    prog.style.width = (pct * 100) + '%';
+    // Frame based on which gallery image is most in view
+    const frames = document.querySelectorAll('.frame');
+    let active = 0;
+    frames.forEach((f, i) => {
+      const r = f.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.6 && r.bottom > 0) active = i + 1;
+    });
+    const padded = String(Math.max(1, active)).padStart(3, '0');
+    sbFrame.textContent = padded;
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+
+/* =========================================================================
+   DEEP LINK — if the URL has a #slug on load, find the matching photo
+   and auto-open its details modal. This makes any photo's URL shareable:
+   e.g. yourdomain/Photography/#Above_What_Holds_You will land the visitor
+   directly on that photo's modal, with a working back button that closes
+   the modal and reveals the gallery underneath (rather than leaving the
+   site). We rewrite the landed history entry to the bare gallery URL
+   first, so "back" always lands on the gallery — even on first visits.
+
+   This is a regular function (not an IIFE) because it must be called by
+   the photo-discovery bootstrap AFTER the GitHub/jsDelivr fetch resolves
+   — at script-parse time PHOTOS is empty, so indexBySlug would always
+   return -1 and the deep link would silently fail back to the gallery.
+   ========================================================================= */
+function tryDeepLink(){
+  const raw = location.hash.slice(1);
+  if (!raw) return;
+  const idx = indexBySlug(raw);
+  if (idx < 0) {
+    // Unknown slug (renamed/deleted photo, typo, etc.) — strip the hash
+    // silently and let the gallery load normally. No error, no flash.
+    history.replaceState(null, '', location.pathname + location.search);
+    return;
+  }
+  // Rewrite the landed entry to the bare URL so the back button from
+  // within the modal lands on the gallery (not the visitor's previous
+  // tab). openModal will then push a fresh entry with the hash.
+  history.replaceState(null, '', location.pathname + location.search);
+
+  // Wait until the boot screen has dismissed before triggering the iris
+  // animation — otherwise the iris plays underneath the boot overlay
+  // and the visitor sees nothing until boot fades, which feels broken.
+  const boot = document.querySelector('.boot');
+  const fire = () => setTimeout(() => openModal(idx), 80);
+  if (!boot || boot.classList.contains('done')) {
+    fire();
+  } else {
+    const obs = new MutationObserver(() => {
+      if (boot.classList.contains('done')) {
+        obs.disconnect();
+        fire();
+      }
+    });
+    obs.observe(boot, { attributes: true, attributeFilter: ['class'] });
+  }
+}
+</script>
+
+</body>
+</html>
