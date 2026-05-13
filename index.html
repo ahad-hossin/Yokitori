@@ -53,6 +53,13 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='10' fill='%230a0a0a'/><path d='M725 465 644 433 179 1298Q166 1323 153.5 1333.0Q141 1343 119 1347L83 1355Q59 1360 52.0 1365.5Q45 1371 45 1379Q45 1389 53.5 1394.5Q62 1400 79 1400H447Q465 1400 476.0 1394.5Q487 1389 487 1379Q487 1361 441 1354L367 1345Q323 1338 312.5 1325.0Q302 1312 315 1286L720 525L674 492L1079 1250Q1102 1292 1091.5 1315.0Q1081 1338 1034 1345L948 1356Q932 1358 924.0 1364.0Q916 1370 916 1379Q916 1389 924.5 1394.5Q933 1400 949 1400H1268Q1285 1400 1294.0 1394.5Q1303 1389 1303 1379Q1303 1371 1296.5 1365.5Q1290 1360 1265 1354L1250 1350Q1228 1346 1212.0 1336.0Q1196 1326 1181.0 1306.0Q1166 1286 1147 1249ZM620 504H738V104Q738 84 750.5 72.0Q763 60 786 56L867 45Q897 39 897 21Q897 12 890.0 6.0Q883 0 867 0H491Q475 0 467.5 6.0Q460 12 460 21Q460 39 491 45L571 56Q594 60 607.0 72.0Q620 84 620 104Z' fill='%23ededed' transform='translate(10.43 54.4) scale(0.032 -0.032)'/></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Connection hints for image CDN + GitHub API. These open the TCP/TLS
+     handshake to cdn.jsdelivr.net and api.github.com while the HTML is still
+     parsing, so the first image bytes arrive ~100-300ms sooner on cold visits. -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://api.github.com">
+<link rel="dns-prefetch" href="https://api.github.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..500&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 /* =========================================================================
@@ -2162,69 +2169,10 @@ async function loadFromGitHub() {
   });
 
   // Sidecar JSONs are loaded by relative path — same origin, no API hit.
-  const sidecars = await Promise.all(filenames.map(fetchSidecar));
-
-  const DEFAULT_EXIF = { camera: '—', lens: '—', iso: '—', f: '—', s: '—', focal: '—' };
-  const list = filenames.map((fname, i) => {
-    const e = sidecars[i] || {};
-    const parsedFromName = parsePhotoFilename(fname);
-    const parsedFromDate = parsedFromName ? null : parseDateString(e.date);
-    const parsed = parsedFromName || parsedFromDate;
-
-    const autoDate = parsed ? formatDate(parsed.day, parsed.month, parsed.year) : '';
-    const autoTitle = parsedFromName
-      ? `Frame ${autoDate}` + (parsedFromName.seq ? ` · ${String(parsedFromName.seq).padStart(2,'0')}` : '')
-      : (e.date ? `Frame ${e.date}` : 'Untitled');
-
-    const item = {
-      key:   'local',
-      title: e.title || autoTitle,
-      loc:   e.loc   || '',
-      coords: e.coords || '',
-      date:  e.date  || autoDate,
-      body:  e.body  || '',
-      img:   cdnUrl(fname),
-      exif:  { ...DEFAULT_EXIF, ...(e.exif || {}) },
-    };
-    if (e.num) item.num = String(e.num);
-    if (e.orientation) item.orientation = e.orientation;
-    return item;
-  });
-
-  PHOTOS = normalizePhotos(list);
-  YEARS = computeYears();
-  activeYear = 'all';
-  activeMonth = 'all';
-  visibleByView = {};
-  window.__yokitoriOrderMap = null;
-
-  renderYearPills();
-  renderMonthPills();
-  renderGrid();
-
-  // Backfill orientation for any photo without an explicit one in its sidecar.
-  const needsOrient = PHOTOS.filter(p => !p.orientation);
-  if (needsOrient.length) {
-    let remaining = needsOrient.length;
-    needsOrient.forEach(p => {
-      const im = new Image();
-      im.onload = () => {
-        const r = im.naturalWidth / im.naturalHeight;
-        p.orientation = r < 0.95 ? 'tall' : (r > 1.05 ? 'wide' : 'square');
-        remaining--;
-        if (remaining === 0) {
-          window.__yokitoriOrderMap = null;
-          renderGrid();
-        }
-      };
-      im.onerror = () => {
-        remaining--;
-        if (remaining === 0) { window.__yokitoriOrderMap = null; renderGrid(); }
-      };
-      im.src = p.img;
-    });
-  }
-
+  // Render immediately with cached/auto-derived data; fetch any uncached
+  // sidecars in the background. This is the cold-load speedup.
+  _renderAndEnrich(filenames);
+  _saveFilelist(filenames, GITHUB_CONFIG.branch);
   return PHOTOS.length;
 }
 
@@ -2302,69 +2250,9 @@ async function loadFromJsDelivr() {
     return a.localeCompare(b);
   });
 
-  const sidecars = await Promise.all(filenames.map(fetchSidecar));
-
-  const DEFAULT_EXIF = { camera: '—', lens: '—', iso: '—', f: '—', s: '—', focal: '—' };
-  const list = filenames.map((fname, i) => {
-    const e = sidecars[i] || {};
-    const parsedFromName = parsePhotoFilename(fname);
-    const parsedFromDate = parsedFromName ? null : parseDateString(e.date);
-    const parsed = parsedFromName || parsedFromDate;
-
-    const autoDate = parsed ? formatDate(parsed.day, parsed.month, parsed.year) : '';
-    const autoTitle = parsedFromName
-      ? `Frame ${autoDate}` + (parsedFromName.seq ? ` · ${String(parsedFromName.seq).padStart(2,'0')}` : '')
-      : (e.date ? `Frame ${e.date}` : 'Untitled');
-
-    const item = {
-      key:   'local',
-      title: e.title || autoTitle,
-      loc:   e.loc   || '',
-      coords: e.coords || '',
-      date:  e.date  || autoDate,
-      body:  e.body  || '',
-      img:   cdnUrl(fname),
-      exif:  { ...DEFAULT_EXIF, ...(e.exif || {}) },
-    };
-    if (e.num) item.num = String(e.num);
-    if (e.orientation) item.orientation = e.orientation;
-    return item;
-  });
-
-  PHOTOS = normalizePhotos(list);
-  YEARS = computeYears();
-  activeYear = 'all';
-  activeMonth = 'all';
-  visibleByView = {};
-  window.__yokitoriOrderMap = null;
-
-  renderYearPills();
-  renderMonthPills();
-  renderGrid();
-
-  // Backfill orientation for photos missing an explicit one in their sidecar.
-  const needsOrient = PHOTOS.filter(p => !p.orientation);
-  if (needsOrient.length) {
-    let remaining = needsOrient.length;
-    needsOrient.forEach(p => {
-      const im = new Image();
-      im.onload = () => {
-        const r = im.naturalWidth / im.naturalHeight;
-        p.orientation = r < 0.95 ? 'tall' : (r > 1.05 ? 'wide' : 'square');
-        remaining--;
-        if (remaining === 0) {
-          window.__yokitoriOrderMap = null;
-          renderGrid();
-        }
-      };
-      im.onerror = () => {
-        remaining--;
-        if (remaining === 0) { window.__yokitoriOrderMap = null; renderGrid(); }
-      };
-      im.src = p.img;
-    });
-  }
-
+  // Render immediately, enrich with sidecars in the background.
+  _renderAndEnrich(filenames);
+  _saveFilelist(filenames, GITHUB_CONFIG.branch);
   return PHOTOS.length;
 }
 
@@ -2389,17 +2277,227 @@ function parseDateString(s) {
   return null;
 }
 
+// In-memory sidecar cache so we don't re-fetch within the same session.
+const _SIDECAR_MEM = new Map();
+// localStorage key for sidecar cache (persists across visits).
+const _SIDECAR_LS_KEY = 'yokitori:sidecars:v1';
+// How long a cached sidecar is "fresh" before we revalidate. 24h is fine —
+// sidecars almost never change once a photo is published.
+const _SIDECAR_TTL_MS = 24 * 60 * 60 * 1000;
+
+function _loadSidecarLS() {
+  try {
+    const raw = localStorage.getItem(_SIDECAR_LS_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) || {};
+  } catch (_) { return {}; }
+}
+function _saveSidecarLS(obj) {
+  try { localStorage.setItem(_SIDECAR_LS_KEY, JSON.stringify(obj)); } catch (_) {}
+}
+let _SIDECAR_LS = _loadSidecarLS();
+let _sidecarLSDirty = false;
+let _sidecarLSFlushTimer = null;
+function _flushSidecarLS() {
+  if (!_sidecarLSDirty) return;
+  _saveSidecarLS(_SIDECAR_LS);
+  _sidecarLSDirty = false;
+}
+function _scheduleSidecarLSFlush() {
+  _sidecarLSDirty = true;
+  if (_sidecarLSFlushTimer) return;
+  _sidecarLSFlushTimer = setTimeout(() => {
+    _sidecarLSFlushTimer = null;
+    _flushSidecarLS();
+  }, 300);
+}
+
 async function fetchSidecar(basename) {
   const jsonName = basename.replace(/\.(webp|jpg|jpeg|png|avif)$/i, '.json');
-  // Sidecar JSONs are served via jsDelivr too. They 404 silently if the
-  // photo has no sidecar — that's expected, not an error.
+
+  // Fast path 1: in-memory cache (instant).
+  if (_SIDECAR_MEM.has(jsonName)) return _SIDECAR_MEM.get(jsonName);
+
+  // Fast path 2: localStorage cache from a previous visit. Stale-while-
+  // revalidate: return cached data immediately, refresh in background.
+  const cached = _SIDECAR_LS[jsonName];
+  const now = Date.now();
+  if (cached && (now - cached.ts) < _SIDECAR_TTL_MS) {
+    _SIDECAR_MEM.set(jsonName, cached.data);
+    return cached.data;
+  }
+
+  // Slow path: fetch from CDN. We DO NOT pass cache:'no-cache' — letting the
+  // browser's HTTP cache do its job is what makes repeat visits feel instant.
+  // jsDelivr already invalidates branch refs every ~10-15 min, so freshness
+  // is handled at the edge.
   try {
-    const r = await fetch(cdnUrl(jsonName), { cache: 'no-cache' });
-    if (!r.ok) return null;
-    return await r.json();
+    const r = await fetch(cdnUrl(jsonName));
+    const data = r.ok ? await r.json() : null;
+    _SIDECAR_MEM.set(jsonName, data);
+    _SIDECAR_LS[jsonName] = { data, ts: now };
+    _scheduleSidecarLSFlush();
+    return data;
   } catch (err) {
+    _SIDECAR_MEM.set(jsonName, null);
     return null;
   }
+}
+
+// Synchronous lookup: returns cached sidecar data (memory or fresh localStorage)
+// without making a network request. Used during the fast initial render.
+function _syncSidecar(basename) {
+  const jsonName = basename.replace(/\.(webp|jpg|jpeg|png|avif)$/i, '.json');
+  if (_SIDECAR_MEM.has(jsonName)) return _SIDECAR_MEM.get(jsonName);
+  const c = _SIDECAR_LS[jsonName];
+  if (c && (Date.now() - c.ts) < _SIDECAR_TTL_MS) {
+    _SIDECAR_MEM.set(jsonName, c.data);
+    return c.data;
+  }
+  return null;
+}
+
+// Build a list of photo objects from filenames + (optional) sidecar data.
+// Sidecars may be null/missing for photos without metadata — auto-titles are
+// derived from the date encoded in the filename (dd_mm_yyyy_yokitori.ext).
+function _buildPhotoList(filenames, sidecars) {
+  const DEFAULT_EXIF = { camera: '—', lens: '—', iso: '—', f: '—', s: '—', focal: '—' };
+  return filenames.map((fname, i) => {
+    const e = (sidecars && sidecars[i]) || {};
+    const parsedFromName = parsePhotoFilename(fname);
+    const parsedFromDate = parsedFromName ? null : parseDateString(e.date);
+    const parsed = parsedFromName || parsedFromDate;
+
+    const autoDate = parsed ? formatDate(parsed.day, parsed.month, parsed.year) : '';
+    const autoTitle = parsedFromName
+      ? `Frame ${autoDate}` + (parsedFromName.seq ? ` · ${String(parsedFromName.seq).padStart(2,'0')}` : '')
+      : (e.date ? `Frame ${e.date}` : 'Untitled');
+
+    const item = {
+      key:   'local',
+      title: e.title || autoTitle,
+      loc:   e.loc   || '',
+      coords: e.coords || '',
+      date:  e.date  || autoDate,
+      body:  e.body  || '',
+      img:   cdnUrl(fname),
+      exif:  { ...DEFAULT_EXIF, ...(e.exif || {}) },
+    };
+    if (e.num) item.num = String(e.num);
+    if (e.orientation) item.orientation = e.orientation;
+    return item;
+  });
+}
+
+// Backfill orientation for photos without an explicit one in their sidecar.
+// Runs in the background — re-renders the grid once all probes resolve so
+// 'tall' frames slot into their correct positions.
+function _backfillOrientation() {
+  const needsOrient = PHOTOS.filter(p => !p.orientation);
+  if (!needsOrient.length) return;
+  let remaining = needsOrient.length;
+  needsOrient.forEach(p => {
+    const im = new Image();
+    im.onload = () => {
+      const r = im.naturalWidth / im.naturalHeight;
+      p.orientation = r < 0.95 ? 'tall' : (r > 1.05 ? 'wide' : 'square');
+      remaining--;
+      if (remaining === 0) {
+        window.__yokitoriOrderMap = null;
+        renderGrid();
+      }
+    };
+    im.onerror = () => {
+      remaining--;
+      if (remaining === 0) { window.__yokitoriOrderMap = null; renderGrid(); }
+    };
+    im.src = p.img;
+  });
+}
+
+// THE SPEEDUP — render the grid as soon as we have a sorted filename list,
+// using cached sidecar data (from prior visits via localStorage) or auto-
+// titles derived from filenames. Any uncached sidecars are fetched in the
+// background and merged into PHOTOS once they arrive. This means image bytes
+// start streaming from the CDN on the FIRST frame after the file list comes
+// back, not after N sidecar round-trips.
+let _hasRenderedOnce = false;
+function _renderAndEnrich(filenames) {
+  // First pass — synchronous, no network. Uses cached sidecars where available.
+  const cachedSidecars = filenames.map(_syncSidecar);
+
+  // Preserve user navigation state across re-renders (e.g. cache render →
+  // live render → sidecar enrichment render). Only the very first render
+  // resets to defaults.
+  const prevVisible = _hasRenderedOnce ? visibleByView : {};
+  const prevYear    = _hasRenderedOnce ? activeYear    : 'all';
+  const prevMonth   = _hasRenderedOnce ? activeMonth   : 'all';
+
+  PHOTOS = normalizePhotos(_buildPhotoList(filenames, cachedSidecars));
+  YEARS = computeYears();
+  activeYear = prevYear;
+  activeMonth = prevMonth;
+  visibleByView = prevVisible;
+  window.__yokitoriOrderMap = null;
+  renderYearPills();
+  renderMonthPills();
+  renderGrid();              // ← images begin downloading here
+  _hasRenderedOnce = true;
+
+  // Background: orientation probes for any photos missing explicit orientation.
+  _backfillOrientation();
+
+  // Background: fetch any sidecars that weren't already cached.
+  const stillMissing = filenames.some(f => {
+    const jsonName = f.replace(/\.(webp|jpg|jpeg|png|avif)$/i, '.json');
+    return !_SIDECAR_MEM.has(jsonName);
+  });
+  if (!stillMissing) return;
+
+  Promise.all(filenames.map(fetchSidecar)).then(sidecars => {
+    // Only re-render if the fresh sidecars actually contain new info
+    // (titles, locations, body text, etc). Avoids a useless DOM rebuild
+    // when every sidecar is missing/empty.
+    const hasFreshData = sidecars.some(s => s && (s.title || s.loc || s.body || s.coords || s.exif || s.num));
+    if (!hasFreshData) return;
+    // Preserve user navigation state across the re-render.
+    const v = visibleByView, y = activeYear, m = activeMonth;
+    PHOTOS = normalizePhotos(_buildPhotoList(filenames, sidecars));
+    YEARS = computeYears();
+    window.__yokitoriOrderMap = null;
+    visibleByView = v;
+    activeYear = y;
+    activeMonth = m;
+    renderYearPills();
+    renderMonthPills();
+    renderGrid();   // images are already in browser cache — no re-download
+  });
+}
+
+// Cached filename list, so repeat visits can render BEFORE the GitHub API
+// even responds. Stored under a per-(owner,repo,branch) key.
+const _FILELIST_LS_KEY = 'yokitori:filelist:v1';
+const _FILELIST_TTL_MS = 6 * 60 * 60 * 1000;  // 6h — refresh in background
+
+function _getCachedFilelist() {
+  try {
+    const raw = localStorage.getItem(_FILELIST_LS_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    const { owner, repo } = GITHUB_CONFIG;
+    if (obj.owner !== owner || obj.repo !== repo) return null;
+    if (!Array.isArray(obj.filenames) || !obj.filenames.length) return null;
+    if ((Date.now() - obj.ts) > _FILELIST_TTL_MS) return null;
+    return obj;
+  } catch (_) { return null; }
+}
+function _saveFilelist(filenames, branch) {
+  try {
+    const { owner, repo } = GITHUB_CONFIG;
+    localStorage.setItem(_FILELIST_LS_KEY, JSON.stringify({
+      owner, repo, branch, filenames, ts: Date.now()
+    }));
+  } catch (_) {}
 }
 
 /* =========================================================================
@@ -2839,11 +2937,17 @@ function renderGrid() {
     div.setAttribute('data-i', i);
     div.setAttribute('data-k', k);
     if (arranging) div.setAttribute('draggable', 'true');
+    // First ~6 tiles are above the fold on most viewports — load them
+    // eagerly with high priority so the LCP image arrives ASAP. Everything
+    // else stays lazy. decoding="async" is cheap and lets the browser
+    // decode off the main thread.
+    const eager = k < 6;
+    const loadAttr = eager ? 'fetchpriority="high"' : 'loading="lazy" fetchpriority="low"';
     div.innerHTML = `
       <div class="frame-num">N° ${p.num}</div>
       <div class="frame-focus">AF LOCK</div>
       <div class="frame-img-wrap">
-        <img loading="lazy" src="${p.img}" alt="${p.title}" />
+        <img ${loadAttr} decoding="async" src="${p.img}" alt="${p.title}" />
       </div>
       <div class="c1"></div><div class="c2"></div>
       <div class="frame-meta">
@@ -3211,19 +3315,42 @@ renderGrid();
 //
 // Push or delete photos on GitHub — the gallery updates on the next page load.
 (async () => {
-  // Show a loading indicator in the gallery while discovery runs.
   const gridEl = document.getElementById('grid');
-  if (gridEl && !PHOTOS.length) {
+
+  // INSTANT-RENDER PATH — on repeat visits, paint the grid from the cached
+  // filename list before the GitHub API call even fires. The cache is bounded
+  // by _FILELIST_TTL_MS (6h) and tied to (owner, repo), so it can't show
+  // photos from a different repo or get arbitrarily stale.
+  const cached = _getCachedFilelist();
+  let renderedFromCache = false;
+  if (cached && gridEl) {
+    try {
+      GITHUB_CONFIG.branch = cached.branch || GITHUB_CONFIG.branch;
+      _renderAndEnrich(cached.filenames);
+      tryDeepLink();
+      renderedFromCache = true;
+      console.log(`[yokitori] instant-rendered ${cached.filenames.length} photos from cache`);
+    } catch (err) {
+      console.warn('[yokitori] cache render failed:', err.message);
+    }
+  }
+
+  // Show the loading indicator only if we didn't render from cache.
+  if (!renderedFromCache && gridEl && !PHOTOS.length) {
     gridEl.innerHTML = `<p style="color:var(--ink-dim);font-size:13px;letter-spacing:.14em;padding:40px 0;grid-column:1/-1;text-align:center;">LOADING FRAMES…</p>`;
   }
 
+  // Refresh in the background even if we rendered from cache, so any newly
+  // pushed (or deleted) photos appear on the next render. If the live list
+  // matches the cached list, _renderAndEnrich is essentially a no-op for the
+  // user — images are already on screen.
   let discovered = 0;
 
   // PRIMARY: GitHub Contents API — always shows the current state of the repo.
   try {
     discovered = await loadFromGitHub();
     console.log(`[yokitori] auto-discovered ${discovered} photos via GitHub API`);
-    tryDeepLink();
+    if (!renderedFromCache) tryDeepLink();
     return;
   } catch (err) {
     console.warn('[yokitori] GitHub API discovery failed:', err.message);
@@ -3233,10 +3360,10 @@ renderGrid();
   try {
     discovered = await loadFromJsDelivr();
     console.log(`[yokitori] auto-discovered ${discovered} photos via jsDelivr (may be cached)`);
-    tryDeepLink();
+    if (!renderedFromCache) tryDeepLink();
   } catch (err) {
     console.warn('[yokitori] jsDelivr discovery also failed:', err.message);
-    if (gridEl && !PHOTOS.length) {
+    if (!renderedFromCache && gridEl && !PHOTOS.length) {
       gridEl.innerHTML = `<p style="color:var(--ink-dim);font-size:12px;letter-spacing:.14em;padding:40px 0;grid-column:1/-1;text-align:center;">
         COULD NOT LOAD FRAMES — check that the GitHub repo is public,<br>
         the branch name is correct, and the photos/ folder exists.<br>
@@ -3359,7 +3486,7 @@ if (PHOTOS.length <= 1) {
     const t = document.createElement('div');
     t.className = 'thumb';
     t.setAttribute('data-i', i);
-    t.innerHTML = `<img loading="lazy" src="${p.img}" alt="" />`;
+    t.innerHTML = `<img loading="lazy" decoding="async" src="${p.img}" alt="" />`;
     t.addEventListener('click', () => renderPhoto(i));
     mStrip.appendChild(t);
   });
